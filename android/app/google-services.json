@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "892715575526",
+    "project_id": "ehson-6d76d",
+    "storage_bucket": "ehson-6d76d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:892715575526:android:ae077b4239610b59d53327",
+        "android_client_info": {
+          "package_name": "uz.miraziz.ehson.ehson"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVqdkABR2L5mzLt6oXMb1xfiTjHNzFxMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
