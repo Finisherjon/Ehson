@@ -10,6 +10,8 @@ part 'yordam_event.dart';
 
 part 'yordam_state.dart';
 
+
+//yordam blockga uxshagan qilishin kerak chunki bu ham scrool bo'ganiga qolgan like productlani olishi kerak bir marta ogan payt 10 tasini oladi keyen scroll buganga yana 10 tasini shu uchun yordam block qilinganday qilasan
 class YordamBloc extends Bloc<YordamEvent, YordamState> {
   YordamBloc() : super(YordamState()) {
     on<YordamEvent>((event, emit) async {
@@ -33,7 +35,6 @@ class YordamBloc extends Bloc<YordamEvent, YordamState> {
                 ? true
                 : false));
       }
-
       if (event is GetYordamEvent) {
         if (state.islast) return;
         try {

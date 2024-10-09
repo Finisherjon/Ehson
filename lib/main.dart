@@ -1,4 +1,6 @@
 import 'package:ehson/bloc/add_product/add_product_bloc.dart';
+import 'package:ehson/bloc/chat/chat_bloc.dart';
+import 'package:ehson/bloc/get_like/get_like_bloc.dart';
 import 'package:ehson/bloc/homebloc/home_bloc.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
 import 'package:ehson/screen/bottom_bar.dart';
@@ -51,6 +53,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => HomeBloc(),
         ),
+        BlocProvider(
+          create: (context) => ChatBloc(),
+        ),
+        BlocProvider(create: (context) => GetLikeBloc())
       ],
       // create: (context) => AddProductBloc(),
       child: MaterialApp(
@@ -102,6 +108,18 @@ class MyApp extends StatelessWidget {
 //   void _onMapCreated(GoogleMapController controller) {
 //     mapController = controller;
 //   }
+//ichiga kirganiniyam tugirlaymiz keyen
+//hozi nima muammo
+//bulli hozirgachaui kurinmay utirodida uwaanga chalkaw hammasi anabu rasmni qerdan olamiz
+//mavzu bor chat bor bu qaysi biri hozi mavzumi? birinchi chiqaykon
+//ichiga kirsa shunay chiqsindi shuni uini taxla
+//qarin tax manabu rasmni keyin qoyamizmi xafoydalanuvchilani
+//ichiga kirsa shunay chiqsin shuni taxla xay
+//davay
+//mana uxshatipsanku ui tugirlab qoyda endi
+//xay
+//pasdagi qerdan keli?
+//bu kompga yozaykoniz uchun shuany
 //
 //   Future<void> _onTap(LatLng position) async {
 //     setState(() {

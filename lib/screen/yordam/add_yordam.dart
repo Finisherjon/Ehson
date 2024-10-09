@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../api/repository.dart';
 import '../../constants/constants.dart';
 import 'package:http/http.dart' as http;
+
 class AddYordam extends StatefulWidget {
   const AddYordam({super.key});
 
@@ -25,15 +26,16 @@ class _AddYordamState extends State<AddYordam> {
   final TextEditingController _controller_info = TextEditingController();
   final TextEditingController _controller_number = TextEditingController();
 
-
   Future<String> _uploadImage(XFile image) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     final SharedPreferences prefs = await _prefs;
     token = prefs.getString('bearer_token') ?? '';
-    try{
+    try {
       var uri = Uri.parse(AppConstans.BASE_URL + '/imageupload');
-      Map <String,String>  headers = {"Authorization": 'Bearer $token',};
+      Map<String, String> headers = {
+        "Authorization": 'Bearer $token',
+      };
       final request = http.MultipartRequest('POST', uri)
         ..files.add(await http.MultipartFile.fromPath('image', image!.path));
       request.headers.addAll(headers);
@@ -49,13 +51,12 @@ class _AddYordamState extends State<AddYordam> {
         print('Image upload failed.');
         return "Error";
       }
-    }
-    catch(e){
+    } catch (e) {
       print(e.toString());
       return "Error";
     }
-
   }
+
 //prosta ui ku holi hechi yoqku ?
   //zur gap yoq faqat anlagan joyini lat longini serverga yuborishin kerak
 
@@ -67,13 +68,12 @@ class _AddYordamState extends State<AddYordam> {
 
     if (pickedFile != null) {
       String server_image_upload_name = await _uploadImage(pickedFile);
-      if(server_image_upload_name != "Error"){
+      if (server_image_upload_name != "Error") {
         setState(() {
           _image = File(pickedFile.path);
           profilePicture = server_image_upload_name;
         });
-      }
-      else{
+      } else {
         Fluttertoast.showToast(
             msg: "Serverda xatolik qayta urunib ko'ring!",
             toastLength: Toast.LENGTH_SHORT,
@@ -116,8 +116,12 @@ class _AddYordamState extends State<AddYordam> {
       String number = _controller_number.text.toString();
       String location = _savedAddressController.text.toString();
       context.loaderOverlay.show();
-      String add_yordam_response = await EhsonRepository()
-          .add_yordam(title, info, number,profilePicture == null ? "" : profilePicture!,location );
+      String add_yordam_response = await EhsonRepository().add_yordam(
+          title,
+          info,
+          number,
+          profilePicture == null ? "" : profilePicture!,
+          location);
       if (add_yordam_response.contains("Success")) {
         context.loaderOverlay.hide();
         Fluttertoast.showToast(
@@ -198,6 +202,7 @@ class _AddYordamState extends State<AddYordam> {
                   SizedBox(
                     height: 15,
                   ),
+
                   Row(
                     children: [
                       Padding(

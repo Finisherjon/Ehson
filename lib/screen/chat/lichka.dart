@@ -29,7 +29,6 @@ class _ChatScreenState extends State<ChatScreen> {
         centerTitle: true,
         title: Text("Toshmat"),
         backgroundColor: Colors.white,
-
         actions: [
           Container(
             margin: EdgeInsets.only(right: 10),
@@ -44,7 +43,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     width: 45,
                     height: 45,
                     child: InkWell(
-                      onTap: (){},
+                      onTap: () {},
                       child: Image.network(
                         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCaRg8BaRhDfuniljt47zyIWn03gFyE7T28w&s",
                         fit: BoxFit.cover,

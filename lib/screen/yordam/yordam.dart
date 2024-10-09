@@ -26,6 +26,7 @@ final _scrollController = ScrollController();
 Timer? _debounce;
 
 class _YordamState extends State<Yordam> {
+
   LatLng? _selectedLocation;
 
   @override
@@ -35,6 +36,7 @@ class _YordamState extends State<Yordam> {
     BlocProvider.of<YordamBloc>(context).add(ReloadYordamEvent(date: ""));
     _scrollController.addListener(_onScroll);
   }
+
 
   @override
   void dispose() {
@@ -107,7 +109,7 @@ class _YordamState extends State<Yordam> {
                           if (state.products[index].img != null) {
                             asosiy_img = state.products[index].img;
                           } else {
-                            asosiy_img = null;
+                            asosiy_img = "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg";
                           }
                         }
 
@@ -127,10 +129,12 @@ class _YordamState extends State<Yordam> {
                                     child: Card(
                                       // shadowColor: Colors.black,
                                       color: Colors.white,
-                                      child: Row(
+                                      child: Wrap(
+                                        spacing: 10, // Space between text and the image
+                                        crossAxisAlignment: WrapCrossAlignment.center,
                                         // crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        // mainAxisAlignment:
+                                        //     MainAxisAlignment.spaceBetween,
                                         children: [
                                           Container(
                                             width: MediaQuery.of(context)
@@ -168,6 +172,8 @@ class _YordamState extends State<Yordam> {
                                                     Text(
                                                       state.products[index].info
                                                           .toString(),
+                                                      maxLines: 3,
+                                                      overflow: TextOverflow.ellipsis,
                                                       style: GoogleFonts.roboto(
                                                         textStyle: TextStyle(
                                                           fontSize: 10,
@@ -315,7 +321,8 @@ class _YordamState extends State<Yordam> {
                                                           index
                                                   ? Image.network(
                                                       AppConstans.BASE_URL +
-                                                          "images/1722061202.jpg",
+                                                          "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg",
+                                                          // "images/1722061202.jpg",
                                                       fit: BoxFit.fitHeight,
                                                     )
                                                   : Image.network(
