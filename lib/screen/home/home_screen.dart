@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:ehson/adjust_size.dart';
 import 'package:ehson/bloc/add_product/add_product_bloc.dart';
 import 'package:ehson/bloc/homebloc/home_bloc.dart';
+import 'package:ehson/bloc/search_product/search_product_bloc.dart';
 import 'package:ehson/bloc/yordam_bloc/yordam_bloc.dart';
 import 'package:ehson/constants/constants.dart';
+import 'package:ehson/mywidgets/mywidgets.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
 import 'package:ehson/screen/profile/profile.dart';
 import 'package:ehson/screen/yordam/yordam.dart';
@@ -11,9 +14,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../api/repository.dart';
+import '../search_page.dart';
 import '../verification/log_In_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -45,24 +52,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   //shera norm qilib chiqor mahsulotlani ui taxla olxdanam dizayn ol manam tashagandan ol rasmla borediku ui qilivur image bilan productni qushadigani qilamiz
-
-  final List<String> imageUrls = [
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwnwx9y0V1QNnkWyCDrrW0NYezpOVpy_3daeJrma7sWF42D2jL5R3C_UdTUHqU_65qQqE&usqp=CAU',
-    'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-card-40-iphone15hero-202309_FMT_WHH?wid=508&hei=472&fmt=p-jpg&qlt=95&.v=1693086369781',
-    'https://cdn.webshopapp.com/shops/277197/files/388578586/frog-frog-52-the-lightweight-kids-bike.jpg',
-    'https://www.webmenshirts.com/9372-thickbox_default/shirt-woven-fabric-blue-fiori-p7eb8.jpg',
-  ];
-
-  final List<String> imageUrl = [
-    "https://scotch-soda.com.au/cdn/shop/products/NOMM166920-0008-FNT.jpg?v=1712104589&width=1000",
-    "https://target.scene7.com/is/image/Target/GUEST_bb901552-2436-4cb6-b805-ce34b1a41d55?wid=488&hei=488&fmt=pjpeg",
-    "https://contents.mediadecathlon.com/p2399053/d375fff1f5ba3c9b5457bd801a2bea00/p2399053.jpg?format=auto&quality=70&f=650x0",
-    "https://tinkerlust.s3.ap-southeast-1.amazonaws.com/products/ebc022cb-d957-4825-8689-5ee6647742d3/original/1280x1280/31803884ece6d68110a0-PhotoRoom_MP-21276-JC-34.png",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPCm1XE1KRdq27NwcSZPsJ2Q96neNQ7muapndKMa6AW18wyEMbdgZRtOgP_sNH4g9r3nI&usqp=CAU",
-    "https://m.media-amazon.com/images/I/61tilO4erpL._AC_UF1000,1000_QL80_.jpg",
-    "https://m.media-amazon.com/images/I/61tilO4erpL._AC_UF1000,1000_QL80_.jpg",
-    "https://m.media-amazon.com/images/I/61tilO4erpL._AC_UF1000,1000_QL80_.jpg",
-  ];
+  Future<bool> add_like_product(int? product_id) async {
+    String add_like = await EhsonRepository().add_like(product_id);
+    if (add_like.contains("Success")) {
+      return true;
+    } else {
+      Fluttertoast.showToast(
+          msg: "Serverda xatolik qayta urunib ko'ring!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return false;
+    }
+  }
 
   bool _heartIcon = false;
 
@@ -79,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //hulayam esdan chiqmasin
   //home block emas yordam block buladi reloadproductevent emas reloadyordam event buladi shulaga etibor ber
-
 
   @override
   void dispose() {
@@ -114,168 +118,294 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  //productlani olaykon qilamiz
-  //blockni qushamiz
-  //va paginationi qushamiz
-  //postni tokenlik qilamiz
+  // void _launchURL(Uri uri, bool inApp) async {
+  //   try {
+  //     if (await canLaunchUrl(uri)) {
+  //       if (inApp) {
+  //         await launchUrl(uri, mode: LaunchMode.inAppWebView);
+  //       } else {
+  //         await launchUrl(uri, mode: LaunchMode.externalApplication);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
+
+  void makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      print('Could not launch $phoneNumber');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       //bottombardayn yoq u avvalam shunay bulib utirodi kuproq rasm quwib billim
       child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.person,
-                  size: 30,
-                  color: Colors.blueAccent,
-                ),
-                onPressed: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) => Profile()));
-                },
-              ),
-              Expanded(
-                // decoration: BoxDecoration(
-                //   borderRadius: BorderRadius.circular(15),
-                // ),
-                child: TextFormField(
-                  autofocus: false,
-                  decoration: InputDecoration(
-                    hintText: 'Nimani qidiryapsiz?',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                  ),
-                  style: TextStyle(color: Colors.grey),
-                  onChanged: (query) {},
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.filter_alt,
-                  size: 30,
-                  color: Colors.blueAccent,
-                ),
-                onPressed: () {
-                  // Define your onPressed functionality here
-                },
-              ),
-            ],
-          ),
-          // actions: <Widget>[
-          //   Padding(
-          //     padding: const EdgeInsets.only(right: 10),
-          //     child: IconButton(
-          //       icon: Icon(Icons.filter_alt),
-          //       onPressed: () {},
-          //       color: Colors.blueAccent,
-          //     ),
-          //   ),
-          // ],
-        ),
+        //uzi appbar berotgan busan qanay pasga tushurasan
+        // appBar: AppBar(
+        //   title: Row(
+        //     children: [
+        //       //nima qimoqchisan pasroqa tushurdim bul
+        //       Padding(
+        //         padding: const EdgeInsets.only(top: 10),
+        //         child: IconButton(
+        //           icon: Icon(
+        //             Icons.person,
+        //             size: IconSize.largeIconSize(context),
+        //             color: Colors.blueAccent,
+        //           ),
+        //           onPressed: () {
+        //             Navigator.of(context)
+        //                 .push(MaterialPageRoute(builder: (context) => Profile()));
+        //           },
+        //         ),
+        //       ),
+        //       Expanded(
+        //         // decoration: BoxDecoration(
+        //         //   borderRadius: BorderRadius.circular(15),
+        //         // ),
+        //
+        //qani search productga qanday utaman pagega
+        //homedagi search borku ushari yozib enter qisa search productga utsin
+        //zur gap yoq
+        //         child: Container(
+        //           height: Sizes.heights(context) * 0.064,
+        //           child: TextFormField(
+        //             autofocus: false,
+        //             decoration: InputDecoration(
+        //               hintText: 'Nimani qidiryapsiz?',
+        //               hintStyle: TextStyle(color: Colors.grey),
+        //               border: OutlineInputBorder(
+        //                 borderRadius: BorderRadius.all(Radius.circular(20.0)),
+        //                 borderSide: BorderSide(color: Colors.white),
+        //               ),
+        //               prefixIcon: Icon(Icons.search, color: Colors.grey,size: IconSize.smallIconSize(context),),
+        //             ),
+        //             style: TextStyle(color: Colors.grey),
+        //             onChanged: (query) {},
+        //           ),
+        //         ),
+        //       ),
+        //       Padding(
+        //         padding: const EdgeInsets.only(top: 10),
+        //         child: IconButton(
+        //           icon: Icon(
+        //             Icons.filter_alt,
+        //             size: IconSize.mediumIconSize(context),
+        //             color: Colors.blueAccent,
+        //           ),
+        //           onPressed: () {
+        //             // Define your onPressed functionality here
+        //           },
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        //   // actions: <Widget>[
+        //   //   Padding(
+        //   //     padding: const EdgeInsets.only(right: 10),
+        //   //     child: IconButton(
+        //   //       icon: Icon(Icons.filter_alt),
+        //   //       onPressed: () {},
+        //   //       color: Colors.blueAccent,
+        //   //     ),
+        //   //   ),
+        //   // ],
+        // ),
         body: SingleChildScrollView(
-          controller: _scrollController,
+          physics: NeverScrollableScrollPhysics(),
           child: Column(
             children: [
               SizedBox(
-                height: 10,
+                height: Sizes.heights(context) * 0.005,
               ),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20, left: 20),
-                    child: Text(
-                      "Category",
-                      style: GoogleFonts.roboto(
-                          textStyle: TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    //nima qimoqchisan pasroqa tushurdim bul
+                    IconButton(
+                      icon: Icon(
+                        Icons.person,
+                        size: IconSize.largeIconSize(context),
+                        color: Colors.blueAccent,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => Profile()));
+                      },
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              //--> Category
+                    Expanded(
+                      // decoration: BoxDecoration(
+                      //   borderRadius: BorderRadius.circular(15),
+                      // ),
 
-              Container(
-                height: 140,
-                width: double.infinity,
-                child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: imageUrls.length,
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            borderRadius: BorderRadius.circular(100),
-                            // splashFactory: InkRRectSplashFactory(),
-                            enableFeedback: false,
-                            onTap: () {
-                              print('Image ${index + 1} tapped');
-                            },
-                            child: Container(
-                              margin: EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                // borderRadius: BorderRadius.circular(100.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Container(
-                                  height: 100,
-                                  width: 100,
-                                  child: CircleAvatar(
-                                    radius: 56,
-                                    backgroundColor: Colors.white,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      // Border radius
-                                      child: ClipOval(
-                                        child: Image.network(
-                                          imageUrls[index],
-                                        ),
-                                      ),
-                                    ),
-                                  )),
-                            ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(30),
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                                return BlocProvider(
+                                  create: (ctx) => SearchProductBloc(),
+                                  child: SearchPage(),
+                                );
+                              }));
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 12.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          Text("Category")
-                        ],
-                      );
-                    }),
+                          child: Row(
+                            children: [
+                              Icon(Icons.search, color: Colors.grey),
+                              SizedBox(width: 8.0),
+                              Text('Nima qidiryapsiz',
+                                  style: TextStyle(color: Colors.grey)),
+                            ],
+                          ),
+                        ),
+                        // Container(
+                        //   height: Sizes.heights(context) * 0.066,
+                        //   child: TextFormField(
+                        //     autofocus: false,
+                        //     decoration: InputDecoration(
+                        //       hintText: 'Nimani qidiryapsiz?',
+                        //       hintStyle: TextStyle(color: Colors.grey),
+                        //       border: OutlineInputBorder(
+                        //         borderRadius:
+                        //             BorderRadius.all(Radius.circular(20.0)),
+                        //         borderSide: BorderSide(color: Colors.white),
+                        //       ),
+                        //       prefixIcon: Icon(
+                        //         Icons.search,
+                        //         color: Colors.grey,
+                        //         size: IconSize.smallIconSize(context),
+                        //       ),
+                        //     ),
+                        //     style: TextStyle(color: Colors.grey),
+                        //     onChanged: (query) {},
+                        //   ),
+                        // ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.filter_alt,
+                        size: IconSize.largeIconSize(context),
+                        color: Colors.blueAccent,
+                      ),
+                      onPressed: () {
+                        // Define your onPressed functionality here
+                      },
+                    ),
+                  ],
+                ),
               ),
-
+              SizedBox(
+                height: Sizes.heights(context) * 0.005,
+              ),
+              //oldin qaranda appbarga berotganizni appbar uzi doim yuqoriga turadiku uni pasga tushuromaysanku holiyam ikita iconni tuwurdim man pasga
+              //davom et
+              // Row(
+              //   children: [
+              //     Padding(
+              //       padding: const EdgeInsets.only(top: 20, left: 20),
+              //       child: Text(
+              //         "Category",
+              //         style: GoogleFonts.roboto(
+              //             textStyle: TextStyle(
+              //                 fontSize: 25, fontWeight: FontWeight.bold)),
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              // SizedBox(
+              //   height: 20,
+              // ),
+              // SizedBox(
+              //   height: 20,
+              // ),
+              // //--> Category
+              //
+              // Container(
+              //   height: 140,
+              //   width: double.infinity,
+              //   child: ListView.builder(
+              //       scrollDirection: Axis.horizontal,
+              //       itemCount: imageUrls.length,
+              //       itemBuilder: (context, index) {
+              //         return Column(
+              //           children: [
+              //             InkWell(
+              //               borderRadius: BorderRadius.circular(100),
+              //               // splashFactory: InkRRectSplashFactory(),
+              //               enableFeedback: false,
+              //               onTap: () {
+              //                 print('Image ${index + 1} tapped');
+              //               },
+              //               child: Container(
+              //                 margin: EdgeInsets.all(8.0),
+              //                 decoration: BoxDecoration(
+              //                   shape: BoxShape.circle,
+              //                   // borderRadius: BorderRadius.circular(100.0),
+              //                   boxShadow: [
+              //                     BoxShadow(
+              //                       color: Colors.black.withOpacity(0.2),
+              //                       spreadRadius: 2,
+              //                       blurRadius: 5,
+              //                       offset: Offset(0, 3),
+              //                     ),
+              //                   ],
+              //                 ),
+              //                 child: Container(
+              //                     height: 100,
+              //                     width: 100,
+              //                     child: CircleAvatar(
+              //                       radius: 56,
+              //                       backgroundColor: Colors.white,
+              //                       child: Padding(
+              //                         padding: const EdgeInsets.all(8),
+              //                         // Border radius
+              //                         child: ClipOval(
+              //                           child: Image.network(
+              //                             imageUrls[index],
+              //                           ),
+              //                         ),
+              //                       ),
+              //                     )),
+              //               ),
+              //             ),
+              //             Text("Category")
+              //           ],
+              //         );
+              //       }),
+              // ),
               //--> 2 button
-
+              //xush nimala bulopti
+              //push qilchi shuyogini
+              //yoizlgan kodlani bir analiz qilib chiq hech nmani uzgartirma endi buyogini man bir norm ishlaydigan qilib chiqay xaykn uzotaman zakazciga kn yana davom etamiz xay
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Container(
-                    width: MediaQuery.of(context).size.width * 0.4,
-                    height: MediaQuery.of(context).size.height * 0.07,
+                    width: Sizes.widths(context) * 0.4,
+                    height: Sizes.heights(context) * 0.07,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent),
                       onPressed: () {},
                       child: Text(
                         "Xayriya",
                         style: TextStyle(
-                            color: Colors.black,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18),
                       ),
@@ -288,7 +418,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         // Navigator.of(context).push(
                         //     MaterialPageRoute(builder: (context) => Yordam()));
-                        Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
                           return BlocProvider(
                             create: (ctx) => YordamBloc(),
                             child: Yordam(),
@@ -306,9 +437,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 15,
-              ),
               //mana shu home screen va home blockdan kuchir xuddi shunay buladi faqat model boshqa
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -321,482 +449,546 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       case Product.success:
                         if (state.products.isEmpty) {
-                          return Center(
-                            child: Text("Empty"),
+                          return Container(
+                            child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height * 0.86,
                           );
                         }
-                        return GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 15,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 0.65,
-                          ),
-                          // controller: _scrollController,
-                          itemCount: state.islast
-                              ? state.products.length
-                              : state.products.length + 2,
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            String? asosiy_img;
-                            if (state.products.length > index) {
-                              if (state.products[index].img1 != null) {
-                                asosiy_img = state.products[index].img1;
-                              } else if (state.products[index].img2 != null) {
-                                asosiy_img = state.products[index].img2;
-                              } else if (state.products[index].img3 != null) {
-                                asosiy_img = state.products[index].img3;
-                              } else {
-                                asosiy_img = null;
-                              }
-                            }
-                            return index >= state.products.length
-                                ? Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : InkWell(
-                                    child: Container(
-                                      // height: MediaQuery.of(context).size.height*0.05,
-                                      padding: EdgeInsets.only(bottom: 10),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(25),
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.1),
-                                            blurRadius: 5,
-                                            spreadRadius: 1,
-                                            offset: const Offset(1, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      //dizayn qichiq buliptiku
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(25),
-                                        ),
-                                        child: Flex(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          direction: Axis.vertical,
+                        return Container(
+                          height: MediaQuery.of(context).size.height * 0.707,
+                          child: MasonryGridView.count(
+                              controller: _scrollController,
+                              physics: BouncingScrollPhysics(),
+                              padding: EdgeInsets.symmetric(vertical: 10),
+                              crossAxisSpacing: 15,
+                              crossAxisCount: 2,
+                              itemCount: state.islast
+                                  ? state.products.length
+                                  : state.products.length + 2,
+                              scrollDirection: Axis.vertical,
+                              mainAxisSpacing: 10,
+                              itemBuilder: (BuildContext context, index) {
+                                if (index >= state.products.length) {
+                                  return Center(
+                                      child: CircularProgressIndicator());
+                                }
+                                //telefonchani bosa endi telefon raqam bod api bilan kelopti
+                                //bulimi? ha zabanca
+                                String? asosiy_img;
+                                if (state.products.length > index) {
+                                  if (state.products[index].img1 != null) {
+                                    asosiy_img = state.products[index].img1;
+                                  } else if (state.products[index].img2 !=
+                                      null) {
+                                    asosiy_img = state.products[index].img2;
+                                  } else if (state.products[index].img3 !=
+                                      null) {
+                                    asosiy_img = state.products[index].img3;
+                                  } else {
+                                    asosiy_img = null;
+                                  }
+                                }
+                                return index >= state.products.length
+                                    ? Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : Container(
+                                        child: Stack(
                                           children: [
-                                            Expanded(
-                                              child: Stack(
-                                                //boli meni normalniy
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Center(
-                                                      child: asosiy_img ==
-                                                                  null &&
-                                                              state.products
-                                                                      .length >
-                                                                  index
-                                                          ? Image.network(
-                                                              AppConstans
-                                                                      .BASE_URL2 +
-                                                                  "images/1722061202.jpg",
-                                                              fit: BoxFit
-                                                                  .fitHeight,
-                                                            )
-                                                          : Image.network(
-                                                              AppConstans
-                                                                      .BASE_URL2 +
-                                                                  "images/" +
-                                                                  asosiy_img!,
-                                                              fit: BoxFit
-                                                                  .fitHeight,
-                                                            ),
+                                            InkWell(
+                                              borderRadius: BorderRadius.circular(30),
+                                              child: Container(
+                                                padding:
+                                                    EdgeInsets.only(bottom: 10),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(25),
+                                                  color: Colors.white,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.1),
+                                                      blurRadius: 5,
+                                                      spreadRadius: 1,
+                                                      offset:
+                                                          const Offset(1, 1),
                                                     ),
-                                                  ),
-                                                  Positioned(
-                                                    right: 10,
-                                                    top: 10,
-                                                    child: Container(
-                                                      height: 30,
-                                                      width: 30,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        shape: BoxShape.circle,
+                                                  ],
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              25),
+                                                      child: Stack(
+                                                        children: [
+                                                          asosiy_img == null &&
+                                                                  state.products
+                                                                          .length >
+                                                                      index
+                                                              ? Image.network(
+                                                                  AppConstans
+                                                                          .BASE_URL2 +
+                                                                      "images/1722061202.jpg",
+                                                                  fit: BoxFit
+                                                                      .fitHeight,
+                                                                )
+                                                              : Image.network(
+                                                                  AppConstans
+                                                                          .BASE_URL2 +
+                                                                      "images/" +
+                                                                      asosiy_img!,
+                                                                  fit: BoxFit
+                                                                      .fitHeight,
+                                                                ),
+                                                          // Image.network(
+                                                          //   imageUrl[index],
+                                                          //   fit: BoxFit.cover,
+                                                          // ),
+                                                          Positioned(
+                                                            right: 10,
+                                                            top: 10,
+                                                            child: Container(
+                                                              height: Sizes.heights(
+                                                                      context) *
+                                                                  0.04,
+                                                              width: Sizes.widths(
+                                                                      context) *
+                                                                  0.07,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: Colors
+                                                                    .white,
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              child: IconButton(
+                                                                style: IconButton
+                                                                    .styleFrom(
+                                                                  minimumSize:
+                                                                      Size.zero,
+                                                                  padding:
+                                                                      EdgeInsets
+                                                                          .zero,
+                                                                ),
+                                                                onPressed:
+                                                                    () async {
+                                                                  int? product_id = state
+                                                                      .products[
+                                                                          index]
+                                                                      .id;
+                                                                  bool
+                                                                      add_like =
+                                                                      await add_like_product(
+                                                                          product_id);
+
+                                                                  if (add_like) {
+                                                                    state
+                                                                        .products[
+                                                                            index]
+                                                                        .isliked = state.products[index].isliked ==
+                                                                            0
+                                                                        ? 1
+                                                                        : 0;
+                                                                  }
+                                                                  //shuni taxla
+                                                                  // state.products[index].phone
+                                                                  //qara statega phoneyam kelopti telefonchani bossa telefon qilishga utsin nomer terib shunoqa package bor
+
+                                                                  //kurdinmi jura ha
+
+                                                                  //san chatga utgan payt awibka chiqopti ui bilan manimca uwani tugirla man apini update qilay getproductni xay
+
+                                                                  //hozir like quwish post buli faqat ui bilan integratsiya qilish kerak
+                                                                  setState(() {
+                                                                    _heartIcon =
+                                                                        !_heartIcon;
+                                                                  });
+                                                                },
+                                                                //productlani oladigan api borku uwani uzgartiramiz man usha productga like bosganmi yoqmi ushaniyam beraman keyen usha bilan aniqlaymiz
+                                                                icon: Icon(
+                                                                  state.products[index].isliked ==
+                                                                          1
+                                                                      ? Icons
+                                                                          .favorite
+                                                                      : Icons
+                                                                          .favorite_border,
+                                                                  color: Colors
+                                                                      .red,
+                                                                  size: 20,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Positioned(
+                                                            right: 10,
+                                                            bottom: 10,
+                                                            child: Column(
+                                                              children: [
+                                                                Container(
+                                                                  height: Sizes
+                                                                          .heights(
+                                                                              context) *
+                                                                      0.037,
+                                                                  width: Sizes.widths(
+                                                                          context) *
+                                                                      0.077,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                  ),
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .center,
+                                                                  child:
+                                                                      IconButton(
+                                                                    style: IconButton
+                                                                        .styleFrom(
+                                                                      minimumSize:
+                                                                          Size.zero,
+                                                                      padding:
+                                                                          EdgeInsets
+                                                                              .zero,
+                                                                    ),
+                                                                    onPressed:
+                                                                        () {},
+                                                                    icon: Icon(
+                                                                      Icons
+                                                                          .chat,
+                                                                      color: Colors
+                                                                          .blue,
+                                                                      size: IconSize
+                                                                          .smallIconSize(
+                                                                              context),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                SizedBox(
+                                                                    height: 8),
+                                                                Container(
+                                                                  height: Sizes
+                                                                          .heights(
+                                                                              context) *
+                                                                      0.04,
+                                                                  width: Sizes.widths(
+                                                                          context) *
+                                                                      0.08,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                  ),
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .center,
+                                                                  child:
+                                                                      IconButton(
+                                                                    style: IconButton
+                                                                        .styleFrom(
+                                                                      minimumSize:
+                                                                          Size.zero,
+                                                                      padding:
+                                                                          EdgeInsets
+                                                                              .zero,
+                                                                    ),
+                                                                    onPressed:
+                                                                        () {
+                                                                      makePhoneCall(state
+                                                                          .products[
+                                                                              index]
+                                                                          .phone!);
+                                                                    },
+                                                                    icon: Icon(
+                                                                      Icons
+                                                                          .phone,
+                                                                      color: Colors
+                                                                          .green,
+                                                                      size: IconSize
+                                                                          .smallIconSize(
+                                                                              context),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: IconButton(
-                                                        style: IconButton
-                                                            .styleFrom(
-                                                          minimumSize:
-                                                              Size.zero,
-                                                          padding:
-                                                              EdgeInsets.zero,
-                                                        ),
-                                                        onPressed: () async {
-                                                          setState(() {
-                                                            _heartIcon =
-                                                                !_heartIcon;
-                                                          });
-                                                        },
-                                                        icon: Icon(
-                                                          _heartIcon
-                                                              ? Icons.favorite
-                                                              : Icons
-                                                                  .favorite_border,
-                                                          color: Colors.red,
-                                                          size: 20,
-                                                        ),
+                                                    ),
+                                                    Padding(
+                                                      padding: EdgeInsets.only(
+                                                          left: 8,
+                                                          right: 8,
+                                                          top: 8),
+                                                      child: Text(
+                                                        state.products[index]
+                                                            .title!,
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
                                                     ),
-                                                  ),
-                                                  Positioned(
-                                                    right: 10,
-                                                    bottom: 10,
-                                                    child: Column(
-                                                      children: [
-                                                        Container(
-                                                          height: 30,
-                                                          width: 30,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors.white,
-                                                            shape:
-                                                                BoxShape.circle,
-                                                          ),
-                                                          alignment:
-                                                              Alignment.center,
-                                                          child: IconButton(
-                                                            style: IconButton
-                                                                .styleFrom(
-                                                              minimumSize:
-                                                                  Size.zero,
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .zero,
-                                                            ),
-                                                            onPressed: () {},
-                                                            icon: Icon(
-                                                              Icons.chat,
-                                                              color:
-                                                                  Colors.blue,
-                                                              size: 20,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 8),
-                                                        // Orasidagi bo'sh joy
-                                                        Container(
-                                                          height: 30,
-                                                          width: 30,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors.white,
-                                                            shape:
-                                                                BoxShape.circle,
-                                                          ),
-                                                          alignment:
-                                                              Alignment.center,
-                                                          child: IconButton(
-                                                            style: IconButton
-                                                                .styleFrom(
-                                                              minimumSize:
-                                                                  Size.zero,
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .zero,
-                                                            ),
-                                                            onPressed: () {},
-                                                            icon: Icon(
-                                                              Icons.phone,
-                                                              color:
-                                                                  Colors.green,
-                                                              size: 20,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          left: 8,
+                                                          right: 8,
+                                                          top: 8),
+                                                      child: Row(
+                                                        children: [
+                                                          Text(' \$ free')
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                  left: 8, right: 8, top: 8),
-                                              child: Text(
-                                                state.products[index].title
-                                                    .toString(),
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                  left: 8, right: 8, top: 8),
-                                              child: Row(
-                                                children: [Text(' \$ free')],
-                                              ),
+                                              onTap: () {},
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    ),
-                                  );
-                          },
+                                      );
+                              }),
                         );
-                      // return LayoutBuilder(
-                      //   builder: (context, constraints) {
-                      //     return Padding(
-                      //       padding: EdgeInsets.all(8.0),
-                      //       child: Container(
-                      //         height: MediaQuery.of(context).size.height,
-                      //         child: MasonryGridView.count(
-                      //           //anashu ikkavini birlawtirib bumaydimi avval uchiq edi shu
-                      //             physics: BouncingScrollPhysics(),
-                      //             padding: EdgeInsets.symmetric(vertical: 10),
-                      //             crossAxisSpacing: 15,
-                      //             crossAxisCount: 2,
-                      //             itemCount: state.products.length,
-                      //             mainAxisSpacing: 10,
-                      //             itemBuilder: (BuildContext context, index) {
-                      //               String? asosiy_img;
-                      //               if (state.products[index].img1 != null) {
-                      //                 asosiy_img = state.products[index].img1;
-                      //               } else if (state.products[index].img2 !=
-                      //                   null) {
-                      //                 asosiy_img = state.products[index].img2;
-                      //               } else if (state.products[index].img3 !=
-                      //                   null) {
-                      //                 asosiy_img = state.products[index].img3;
-                      //               } else {
-                      //                 asosiy_img = null;
-                      //               }
-                      //               return Column(
-                      //                 children: [
-                      //                   Stack(
-                      //                     children: [
-                      //                       InkWell(
-                      //                         child: Container(
-                      //                           padding:
-                      //                               EdgeInsets.only(bottom: 10),
-                      //                           decoration: BoxDecoration(
-                      //                             borderRadius:
-                      //                                 BorderRadius.circular(25),
-                      //                             color: Colors.white,
-                      //                             boxShadow: [
-                      //                               BoxShadow(
-                      //                                 color: Colors.black
-                      //                                     .withOpacity(0.1),
-                      //                                 blurRadius: 5,
-                      //                                 spreadRadius: 1,
-                      //                                 offset:
-                      //                                     const Offset(1, 1),
-                      //                               ),
-                      //                             ],
-                      //                           ),
-                      //                           //dizayn qichiq buliptiku
-                      //                           child: Column(
-                      //                             crossAxisAlignment:
-                      //                                 CrossAxisAlignment.start,
-                      //                             children: [
-                      //                               //qani tagi kurinmayoptiku
-                      //                               //anashuniyam taxlashim kk
-                      //                               //shun taxlangchi qanay qisa
-                      //                               //yuqoridagi searchniyam norm qil  search appbarga turibdu undan chiqoraymi
-                      //                               ClipRRect(
-                      //                                 borderRadius:
-                      //                                     BorderRadius.circular(
-                      //                                         25),
-                      //                                 child: Stack(
-                      //                                   children: [
-                      //                                     asosiy_img == null
-                      //                                         ? Image.network(
-                      //                                             imageUrl[
-                      //                                                 index],
-                      //                                             fit: BoxFit
-                      //                                                 .cover,
-                      //                                           )
-                      //                                         : Image.network(
-                      //                                             AppConstans
-                      //                                                     .BASE_URL2 +
-                      //                                                 "/images/1722061202.jpg",
-                      //                                             fit: BoxFit
-                      //                                                 .cover,
-                      //                                           ),
-                      //                                     Positioned(
-                      //                                       right: 10,
-                      //                                       top: 10,
-                      //                                       child: Container(
-                      //                                         height: 30,
-                      //                                         width: 30,
-                      //                                         decoration:
-                      //                                             BoxDecoration(
-                      //                                           color: Colors
-                      //                                               .white,
-                      //                                           shape: BoxShape
-                      //                                               .circle,
-                      //                                         ),
-                      //                                         alignment:
-                      //                                             Alignment
-                      //                                                 .center,
-                      //                                         child: IconButton(
-                      //                                           style: IconButton
-                      //                                               .styleFrom(
-                      //                                             minimumSize:
-                      //                                                 Size.zero,
-                      //                                             padding:
-                      //                                                 EdgeInsets
-                      //                                                     .zero,
-                      //                                           ),
-                      //                                           onPressed:
-                      //                                               () async {
-                      //                                             setState(() {
-                      //                                               _heartIcon =
-                      //                                                   !_heartIcon;
-                      //                                             });
-                      //                                           },
-                      //                                           icon: Icon(
-                      //                                             _heartIcon
-                      //                                                 ? Icons
-                      //                                                     .favorite
-                      //                                                 : Icons
-                      //                                                     .favorite_border,
-                      //                                             color: Colors
-                      //                                                 .red,
-                      //                                             size: 20,
-                      //                                           ),
-                      //                                         ),
-                      //                                       ),
-                      //                                     ),
-                      //                                     Positioned(
-                      //                                       right: 10,
-                      //                                       bottom: 10,
-                      //                                       child: Column(
-                      //                                         children: [
-                      //                                           Container(
-                      //                                             height: 30,
-                      //                                             width: 30,
-                      //                                             decoration:
-                      //                                                 BoxDecoration(
-                      //                                               color: Colors
-                      //                                                   .white,
-                      //                                               shape: BoxShape
-                      //                                                   .circle,
-                      //                                             ),
-                      //                                             alignment:
-                      //                                                 Alignment
-                      //                                                     .center,
-                      //                                             child:
-                      //                                                 IconButton(
-                      //                                               style: IconButton
-                      //                                                   .styleFrom(
-                      //                                                 minimumSize:
-                      //                                                     Size.zero,
-                      //                                                 padding:
-                      //                                                     EdgeInsets
-                      //                                                         .zero,
-                      //                                               ),
-                      //                                               onPressed:
-                      //                                                   () {},
-                      //                                               icon: Icon(
-                      //                                                 Icons
-                      //                                                     .chat,
-                      //                                                 color: Colors
-                      //                                                     .blue,
-                      //                                                 size: 20,
-                      //                                               ),
-                      //                                             ),
-                      //                                           ),
-                      //                                           SizedBox(
-                      //                                               height: 8),
-                      //                                           // Orasidagi bo'sh joy
-                      //                                           Container(
-                      //                                             height: 30,
-                      //                                             width: 30,
-                      //                                             decoration:
-                      //                                                 BoxDecoration(
-                      //                                               color: Colors
-                      //                                                   .white,
-                      //                                               shape: BoxShape
-                      //                                                   .circle,
-                      //                                             ),
-                      //                                             alignment:
-                      //                                                 Alignment
-                      //                                                     .center,
-                      //                                             child:
-                      //                                                 IconButton(
-                      //                                               style: IconButton
-                      //                                                   .styleFrom(
-                      //                                                 minimumSize:
-                      //                                                     Size.zero,
-                      //                                                 padding:
-                      //                                                     EdgeInsets
-                      //                                                         .zero,
-                      //                                               ),
-                      //                                               onPressed:
-                      //                                                   () {},
-                      //                                               icon: Icon(
-                      //                                                 Icons
-                      //                                                     .phone,
-                      //                                                 color: Colors
-                      //                                                     .green,
-                      //                                                 size: 20,
-                      //                                               ),
-                      //                                             ),
-                      //                                           ),
-                      //                                         ],
-                      //                                       ),
-                      //                                     ),
-                      //                                   ],
-                      //                                 ),
-                      //                               ),
-                      //                               Padding(
-                      //                                 padding: EdgeInsets.only(
-                      //                                     left: 8,
-                      //                                     right: 8,
-                      //                                     top: 8),
-                      //                                 child: Text(
-                      //                                   state.products[index]
-                      //                                       .title
-                      //                                       .toString(),
-                      //                                   style: TextStyle(
-                      //                                       fontWeight:
-                      //                                           FontWeight
-                      //                                               .bold),
-                      //                                   maxLines: 1,
-                      //                                   overflow: TextOverflow
-                      //                                       .ellipsis,
-                      //                                 ),
-                      //                               ),
-                      //                               const Padding(
-                      //                                 padding: EdgeInsets.only(
-                      //                                     left: 8,
-                      //                                     right: 8,
-                      //                                     top: 8),
-                      //                                 child: Row(
-                      //                                   children: [
-                      //                                     Text(' \$ free')
-                      //                                   ],
-                      //                                 ),
-                      //                               ),
-                      //                             ],
-                      //                           ),
-                      //                         ),
-                      //                       ),
-                      //                     ],
+                      //   GridView.builder(
+                      //   gridDelegate:
+                      //       SliverGridDelegateWithFixedCrossAxisCount(
+                      //     crossAxisCount: 2,
+                      //     crossAxisSpacing: 15,
+                      //     mainAxisSpacing: 10,
+                      //     childAspectRatio: 0.65,
+                      //   ),
+                      //   // controller: _scrollController,
+                      //   itemCount: state.islast
+                      //       ? state.products.length
+                      //       : state.products.length + 2,
+                      //   scrollDirection: Axis.vertical,
+                      //   shrinkWrap: true,
+                      //   physics: NeverScrollableScrollPhysics(),
+                      //   itemBuilder: (context, index) {
+                      //     String? asosiy_img;
+                      //     if (state.products.length > index) {
+                      //       if (state.products[index].img1 != null) {
+                      //         asosiy_img = state.products[index].img1;
+                      //       } else if (state.products[index].img2 != null) {
+                      //         asosiy_img = state.products[index].img2;
+                      //       } else if (state.products[index].img3 != null) {
+                      //         asosiy_img = state.products[index].img3;
+                      //       } else {
+                      //         asosiy_img = null;
+                      //       }
+                      //     }
+                      //     return index >= state.products.length
+                      //         ? Center(
+                      //             child: CircularProgressIndicator(),
+                      //           )
+                      //         : InkWell(
+                      //             child: Container(
+                      //               // height: MediaQuery.of(context).size.height*0.05,
+                      //               padding: EdgeInsets.only(bottom: 10),
+                      //               decoration: BoxDecoration(
+                      //                 borderRadius: BorderRadius.circular(25),
+                      //                 color: Colors.white,
+                      //                 boxShadow: [
+                      //                   BoxShadow(
+                      //                     color:
+                      //                         Colors.black.withOpacity(0.1),
+                      //                     blurRadius: 5,
+                      //                     spreadRadius: 1,
+                      //                     offset: const Offset(1, 1),
                       //                   ),
                       //                 ],
-                      //               );
-                      //             }),
-                      //       ),
-                      //     );
+                      //               ),
+                      //               //dizayn qichiq buliptiku
+                      //               child: Container(
+                      //                 decoration: BoxDecoration(
+                      //                   borderRadius:
+                      //                       BorderRadius.circular(25),
+                      //                 ),
+                      //                 child: Flex(
+                      //                   crossAxisAlignment:
+                      //                       CrossAxisAlignment.start,
+                      //                   direction: Axis.vertical,
+                      //                   children: [
+                      //                     Expanded(
+                      //                       child: Stack(
+                      //                         //boli meni normalniy
+                      //                         children: [
+                      //                           Padding(
+                      //                             padding:
+                      //                                 const EdgeInsets.all(
+                      //                                     5.0),
+                      //                             child: Center(
+                      //                               child: asosiy_img ==
+                      //                                           null &&
+                      //                                       state.products
+                      //                                               .length >
+                      //                                           index
+                      //                                   ? Image.network(
+                      //                                       AppConstans
+                      //                                               .BASE_URL2 +
+                      //                                           "images/1722061202.jpg",
+                      //                                       fit: BoxFit
+                      //                                           .fitHeight,
+                      //                                     )
+                      //                                   : Image.network(
+                      //                                       AppConstans
+                      //                                               .BASE_URL2 +
+                      //                                           "images/" +
+                      //                                           asosiy_img!,
+                      //                                       fit: BoxFit
+                      //                                           .fitHeight,
+                      //                                     ),
+                      //                             ),
+                      //                           ),
+                      //                           Positioned(
+                      //                             right: 10,
+                      //                             top: 10,
+                      //                             child: Container(
+                      //                               height: 30,
+                      //                               width: 30,
+                      //                               decoration: BoxDecoration(
+                      //                                 color: Colors.white,
+                      //                                 shape: BoxShape.circle,
+                      //                               ),
+                      //                               alignment:
+                      //                                   Alignment.center,
+                      //                               child: IconButton(
+                      //                                 style: IconButton
+                      //                                     .styleFrom(
+                      //                                   minimumSize:
+                      //                                       Size.zero,
+                      //                                   padding:
+                      //                                       EdgeInsets.zero,
+                      //                                 ),
+                      //                                 onPressed: () async {
+                      //                                   setState(() {
+                      //                                     _heartIcon =
+                      //                                         !_heartIcon;
+                      //                                   });
+                      //                                 },
+                      //                                 icon: Icon(
+                      //                                   _heartIcon
+                      //                                       ? Icons.favorite
+                      //                                       : Icons
+                      //                                           .favorite_border,
+                      //                                   color: Colors.red,
+                      //                                   size: 20,
+                      //                                 ),
+                      //                               ),
+                      //                             ),
+                      //                           ),
+                      //                           Positioned(
+                      //                             right: 10,
+                      //                             bottom: 10,
+                      //                             child: Column(
+                      //                               children: [
+                      //                                 Container(
+                      //                                   height: 30,
+                      //                                   width: 30,
+                      //                                   decoration:
+                      //                                       BoxDecoration(
+                      //                                     color: Colors.white,
+                      //                                     shape:
+                      //                                         BoxShape.circle,
+                      //                                   ),
+                      //                                   alignment:
+                      //                                       Alignment.center,
+                      //                                   child: IconButton(
+                      //                                     style: IconButton
+                      //                                         .styleFrom(
+                      //                                       minimumSize:
+                      //                                           Size.zero,
+                      //                                       padding:
+                      //                                           EdgeInsets
+                      //                                               .zero,
+                      //                                     ),
+                      //                                     onPressed: () {},
+                      //                                     icon: Icon(
+                      //                                       Icons.chat,
+                      //                                       color:
+                      //                                           Colors.blue,
+                      //                                       size: 20,
+                      //                                     ),
+                      //                                   ),
+                      //                                 ),
+                      //                                 SizedBox(height: 8),
+                      //                                 // Orasidagi bo'sh joy
+                      //                                 Container(
+                      //                                   height: 30,
+                      //                                   width: 30,
+                      //                                   decoration:
+                      //                                       BoxDecoration(
+                      //                                     color: Colors.white,
+                      //                                     shape:
+                      //                                         BoxShape.circle,
+                      //                                   ),
+                      //                                   alignment:
+                      //                                       Alignment.center,
+                      //                                   child: IconButton(
+                      //                                     style: IconButton
+                      //                                         .styleFrom(
+                      //                                       minimumSize:
+                      //                                           Size.zero,
+                      //                                       padding:
+                      //                                           EdgeInsets
+                      //                                               .zero,
+                      //                                     ),
+                      //                                     onPressed: () {},
+                      //                                     icon: Icon(
+                      //                                       Icons.phone,
+                      //                                       color:
+                      //                                           Colors.green,
+                      //                                       size: 20,
+                      //                                     ),
+                      //                                   ),
+                      //                                 ),
+                      //                               ],
+                      //                             ),
+                      //                           ),
+                      //                         ],
+                      //                       ),
+                      //                     ),
+                      //                     Padding(
+                      //                       padding: EdgeInsets.only(
+                      //                           left: 8, right: 8, top: 8),
+                      //                       child: Text(
+                      //                         state.products[index].title
+                      //                             .toString(),
+                      //                         style: TextStyle(
+                      //                             fontWeight:
+                      //                                 FontWeight.bold),
+                      //                         maxLines: 1,
+                      //                         overflow: TextOverflow.ellipsis,
+                      //                       ),
+                      //                     ),
+                      //                     Padding(
+                      //                       padding: EdgeInsets.only(
+                      //                           left: 8, right: 8, top: 8),
+                      //                       child: Row(
+                      //                         children: [Text(' \$ free')],
+                      //                       ),
+                      //                     ),
+                      //                   ],
+                      //                 ),
+                      //               ),
+                      //             ),
+                      //           );
                       //   },
                       // );
                       case Product.error:
@@ -810,12 +1002,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+
+        //like pageni ui taxladinmi? ha qarib
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.blueAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
           onPressed: () {
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => AddProductScreen()));
           },
-          child: Icon(Icons.add),
+          child: Icon(Icons.add,color: Colors.white,size: 30,),
         ),
       ),
     );

@@ -1,30 +1,28 @@
-class ProductModel {
+class ChatModel {
   bool? status;
   String? message;
-  Products? products;
+  Feeds? feeds;
 
-  ProductModel({this.status, this.message, this.products});
+  ChatModel({this.status, this.message, this.feeds});
 
-  ProductModel.fromJson(Map<String, dynamic> json) {
+  ChatModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
-    products = json['products'] != null
-        ? new Products.fromJson(json['products'])
-        : null;
+    feeds = json['feeds'] != null ? new Feeds.fromJson(json['feeds']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['status'] = this.status;
     data['message'] = this.message;
-    if (this.products != null) {
-      data['products'] = this.products!.toJson();
+    if (this.feeds != null) {
+      data['feeds'] = this.feeds!.toJson();
     }
     return data;
   }
 }
 
-class Products {
+class Feeds {
   int? currentPage;
   List<Data>? data;
   String? firstPageUrl;
@@ -32,14 +30,14 @@ class Products {
   int? lastPage;
   String? lastPageUrl;
   List<Links>? links;
-  String? nextPageUrl;
+  Null? nextPageUrl;
   String? path;
   int? perPage;
-  String? prevPageUrl;
+  Null? prevPageUrl;
   int? to;
   int? total;
 
-  Products(
+  Feeds(
       {this.currentPage,
         this.data,
         this.firstPageUrl,
@@ -54,7 +52,7 @@ class Products {
         this.to,
         this.total});
 
-  Products.fromJson(Map<String, dynamic> json) {
+  Feeds.fromJson(Map<String, dynamic> json) {
     currentPage = json['current_page'];
     if (json['data'] != null) {
       data = <Data>[];
@@ -107,49 +105,31 @@ class Data {
   int? id;
   int? userId;
   String? title;
-  String? info;
-  String? img1;
-  Null? img2;
-  Null? img3;
-  int? categoryId;
-  bool? status;
+  String? body;
   String? createdAt;
   String? updatedAt;
-  String? phone;
+  String? name;
   String? avatar;
-  int? isliked;
 
   Data(
       {this.id,
         this.userId,
         this.title,
-        this.info,
-        this.img1,
-        this.img2,
-        this.img3,
-        this.categoryId,
-        this.status,
+        this.body,
         this.createdAt,
         this.updatedAt,
-        this.phone,
-        this.avatar,
-        this.isliked});
+        this.name,
+        this.avatar});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     userId = json['user_id'];
     title = json['title'];
-    info = json['info'];
-    img1 = json['img1'];
-    img2 = json['img2'];
-    img3 = json['img3'];
-    categoryId = json['category_id'];
-    status = json['status'];
+    body = json['body'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
-    phone = json['phone'];
+    name = json['name'];
     avatar = json['avatar'];
-    isliked = json['isliked'];
   }
 
   Map<String, dynamic> toJson() {
@@ -157,17 +137,11 @@ class Data {
     data['id'] = this.id;
     data['user_id'] = this.userId;
     data['title'] = this.title;
-    data['info'] = this.info;
-    data['img1'] = this.img1;
-    data['img2'] = this.img2;
-    data['img3'] = this.img3;
-    data['category_id'] = this.categoryId;
-    data['status'] = this.status;
+    data['body'] = this.body;
     data['created_at'] = this.createdAt;
     data['updated_at'] = this.updatedAt;
-    data['phone'] = this.phone;
+    data['name'] = this.name;
     data['avatar'] = this.avatar;
-    data['isliked'] = this.isliked;
     return data;
   }
 }

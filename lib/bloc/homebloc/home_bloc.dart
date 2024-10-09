@@ -14,7 +14,6 @@ class HomeBloc extends Bloc<ProductEvent, ProductState> {
     // on<HomeEvent>((event, emit) {
     //   // TODO: implement event handler
     // });
-    //shundan kuchirish kerak ed
     on<ProductEvent>((event, emit) async {
       if (event is ReloadProductEvent) {
         emit(state.copyWith(

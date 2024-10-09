@@ -44,7 +44,7 @@ class _LocationState extends State<Location> {
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-
+//nima gap nimni qilopsan? tax bulli qarib
     setState(() {
       _currentPosition = LatLng(position.latitude, position.longitude);
 
@@ -80,11 +80,9 @@ class _LocationState extends State<Location> {
   }
 
   Future<void> _onTap(LatLng position) async {
-    //ushanga shuni yuborasan xay//davay zabanca zur faqat ozgina tezlashish kerak xay
-    //muammo busa yoz cuzib yurima oldin kur yaxshilab keyene yoz xay
     String latlong =
         position.latitude.toString() + "," + position.longitude.toString();
-    // print(position.latitude.toString()+","+position.longitude.toString());
+    print(position.latitude.toString()+","+position.longitude.toString());
     setState(() {
       _selectedMarker = Marker(
         markerId: MarkerId(position.toString()),
@@ -168,7 +166,15 @@ class _LocationState extends State<Location> {
       return;
     }
 
-    Navigator.pop(context, address); // Ekranni yopish va manzilni qaytarish
+    if(_selectedMarker == null){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Xaritadan manzilni belgilang'),
+        ),
+      );
+      return;
+    }
+    Navigator.pop(context, _selectedMarker!.position.latitude.toString()+"," + _selectedMarker!.position.longitude.toString());
   }
 
   @override

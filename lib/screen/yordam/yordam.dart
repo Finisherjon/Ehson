@@ -7,8 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../api/models/user_model.dart';
+import '../../api/models/yordam_model.dart';
+import '../../api/repository.dart';
 import '../../constants/constants.dart';
+import '../../mywidgets/mywidgets.dart';
 
 class Yordam extends StatefulWidget {
   const Yordam({super.key});
@@ -24,6 +29,7 @@ class Yordam extends StatefulWidget {
 
 final _scrollController = ScrollController();
 Timer? _debounce;
+//add yordam borku ushanga lokatsiyani qerligi emas lat long save qilish kerak apiga lat long ni post qil xay
 
 class _YordamState extends State<Yordam> {
   LatLng? _selectedLocation;
@@ -63,12 +69,59 @@ class _YordamState extends State<Yordam> {
     });
   }
 
+  bool server_error = false;
+  RefreshController _refreshController =
+  RefreshController(initialRefresh: false);
+  YordamModel? yordamModel;
+
+
+
+
+  //yordamga pastdan yuqoriga tushirsa refresh qiladigani qo'shopsanmi?
+  //buni oso yuli boku
+  //nimaga boshiga 2 ta chiqoropti serverdan bitta keloptiku
+  Future<void> _onrefresh() async {
+    //hozircha push qilchi anabu yordamni bitta tugirlayman uzim push qilchi
+    //yana nima qmoqchisan kn anabu profil qitti bowqacha darrav save chiqadi hechnimadan oldin kn ikkaviyam birxil buladi norm
+    //shuni choqirsan buldi uzi hamma olinganlarni tozalab qayta olishga zapros yuboradi kurdinmi ososngina
+    BlocProvider.of<YordamBloc>(context).add(ReloadYordamEvent(date: ""));
+    // try {
+    //   setState(() {
+    //     yordamModel = null;
+    //   });
+    //   YordamModel? yordamModel_server = await EhsonRepository().getyordam();
+    //   setState(() {
+    //     server_error = false;
+    //     yordamModel = yordamModel_server;
+    //     // _controller_name.text = yordamModel!.user!.name.toString();
+    //     // if (yordamModel!.user!.phone != null) {
+    //     //   _controller_phone.text = yordamModel!.user!.phone.toString();
+    //     // }
+    //   });
+    // } catch (e) {
+    //   //agar server bilan nimadir xatolik bugan paytga server_error degan uzgaruvchi olim ui ga xatolik buganini bildirish uchun
+    //   setState(() {
+    //     server_error = true;
+    //   });
+    //   //server bilan boglanishda xatolik
+    // }
+    _refreshController.refreshCompleted();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.add),
+            backgroundColor: Colors.blueAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Icon(
+              Icons.add,
+              size: 30,
+              color: Colors.white,
+            ),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -81,264 +134,276 @@ class _YordamState extends State<Yordam> {
           centerTitle: true,
           title: Text("Yordam"),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: BlocBuilder<YordamBloc, YordamState>(
-            builder: (context, state) {
-              switch (state.status) {
-                case YordamProduct.loading:
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                case YordamProduct.success:
-                  if (state.products.isEmpty) {
+        body: SmartRefresher(
+          onRefresh: _onrefresh,
+          controller: _refreshController,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: BlocBuilder<YordamBloc, YordamState>(
+              builder: (context, state) {
+                switch (state.status) {
+                  case YordamProduct.loading:
                     return Center(
-                      child: Text("Empty"),
+                      child: CircularProgressIndicator(),
                     );
-                  }
-                  return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: state.islast
-                          ? state.products.length
-                          : state.products.length + 2,
-                      itemBuilder: (context, index) {
-                        String? asosiy_img;
-                        if (state.products.length > index) {
-                          if (state.products[index].img != null) {
-                            asosiy_img = state.products[index].img;
-                          } else {
-                            asosiy_img = null;
-                          }
-                        }
 
-                        return index >= state.products.length
-                            ? Center(
-                                child: CircularProgressIndicator(),
-                              )
-                            : Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.20,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 5),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(15),
-                                    onTap: () {},
-                                    child: Card(
-                                      // shadowColor: Colors.black,
-                                      color: Colors.white,
-                                      child: Row(
-                                        // crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.37,
-                                            child: Stack(
-                                              children: [
-                                                Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      state
-                                                          .products[index].title
-                                                          .toString(),
-                                                      style: GoogleFonts.roboto(
-                                                        textStyle: TextStyle(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.3,
-                                                      child: Divider(
-                                                        color: Colors.grey[400],
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      state.products[index].info
-                                                          .toString(),
-                                                      style: GoogleFonts.roboto(
-                                                        textStyle: TextStyle(
-                                                          fontSize: 10,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                // SizedBox(height: MediaQuery.of(context).size.height * 0.05,),
-                                                Positioned(
-                                                  left: 6,
-                                                  bottom: 1,
-                                                  child: Row(
+                    //nimani taxlayopsan? maanbu profilga kirsa bunam buladiku shuni taxlaykondim
+                  case YordamProduct.success:
+                    if (state.products.isEmpty) {
+                      return Container(
+                        child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.86,
+                      );
+                    }
+                    return ListView.builder(
+                        controller: _scrollController,
+                        itemCount: state.islast
+                            ? state.products.length
+                            : state.products.length + 1,
+                        itemBuilder: (context, index) {
+                          String? asosiy_img;
+                          if (state.products.length > index) {
+                            if (state.products[index].img != null) {
+                              asosiy_img = state.products[index].img;
+                            } else {
+                              //qaysidir yordam productga imgi locaksiya add qigan eding
+                              asosiy_img =
+                                  "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg";
+                            }
+                          }
+
+                          return index >= state.products.length
+                              ? Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                              : Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.20,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(horizontal: 5),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(15),
+                                      onTap: () {},
+                                      child: Card(
+                                        // shadowColor: Colors.black,
+                                        color: Colors.white,
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.37,
+                                              child: Stack(
+                                                children: [
+                                                  Column(
                                                     mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
+                                                        MainAxisAlignment.center,
                                                     children: [
-                                                      Container(
-                                                        height: 30,
-                                                        width: 30,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors.white,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                        alignment:
-                                                            Alignment.center,
-                                                        child: IconButton(
-                                                          style: IconButton
-                                                              .styleFrom(
-                                                            minimumSize:
-                                                                Size.zero,
-                                                            padding:
-                                                                EdgeInsets.zero,
-                                                          ),
-                                                          onPressed: () {},
-                                                          icon: Icon(
-                                                            Icons.phone,
-                                                            color: Colors.green,
-                                                            size: 20,
-                                                          ),
+                                                      Text(
+                                                        state
+                                                            .products[index].title
+                                                            .toString(),
+                                                        style: GoogleFonts.roboto(
+                                                          textStyle: TextStyle(
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
                                                         ),
                                                       ),
-                                                      SizedBox(height: 8),
-                                                      Container(
-                                                        height: 30,
-                                                        width: 30,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors.white,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                        alignment:
-                                                            Alignment.center,
-                                                        child: IconButton(
-                                                          style: IconButton
-                                                              .styleFrom(
-                                                            minimumSize:
-                                                                Size.zero,
-                                                            padding:
-                                                                EdgeInsets.zero,
-                                                          ),
-                                                          onPressed: () {},
-                                                          icon: Icon(
-                                                            Icons.chat,
-                                                            color: Colors
-                                                                .blueAccent,
-                                                            size: 20,
-                                                          ),
+                                                      SizedBox(
+                                                        width:
+                                                            MediaQuery.of(context)
+                                                                    .size
+                                                                    .width *
+                                                                0.3,
+                                                        child: Divider(
+                                                          color: Colors.grey[400],
                                                         ),
                                                       ),
-                                                      SizedBox(height: 8),
-                                                      Container(
-                                                        height: 30,
-                                                        width: 30,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors.white,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                        alignment:
-                                                            Alignment.center,
-                                                        child: IconButton(
-                                                          style: IconButton
-                                                              .styleFrom(
-                                                            minimumSize:
-                                                                Size.zero,
-                                                            padding:
-                                                                EdgeInsets.zero,
-                                                          ),
-                                                          onPressed: () async {
-                                                            // final result =
-                                                            //     await Navigator
-                                                            //         .push(
-                                                            //   context,
-                                                            //   MaterialPageRoute(
-                                                            //     builder:
-                                                            //         (context) =>
-                                                            //             Location(),
-                                                            //   ),
-                                                            // );
-                                                            //
-                                                            // if (result !=
-                                                            //     null) {
-                                                            //   setState(() {
-                                                            //     _selectedLocation =
-                                                            //         result;
-                                                            //   });
-                                                            // }
-                                                          },
-                                                          icon: Icon(
-                                                            Icons.location_on,
-                                                            color: Colors.red,
-                                                            size: 20,
+                                                      Text(
+                                                        state.products[index].info
+                                                            .toString(),
+                                                        maxLines: 3,
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                        style: GoogleFonts.roboto(
+                                                          textStyle: TextStyle(
+                                                            fontSize: 10,
                                                           ),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.53,
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              // child: Image.network(
-                                              //   state.products[index].img,
-                                              //   "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg",
-                                              //   fit: BoxFit.cover,
-                                              // ),
-
-                                              child: asosiy_img == null &&
-                                                      state.products.length >
-                                                          index
-                                                  ? Image.network(
-                                                      AppConstans.BASE_URL +
-                                                          "images/1722061202.jpg",
-                                                      fit: BoxFit.fitHeight,
-                                                    )
-                                                  : Image.network(
-                                                      AppConstans.BASE_URL +
-                                                          "images/" +
-                                                          asosiy_img!,
-                                                      fit: BoxFit.fitHeight,
+                                                  // SizedBox(height: MediaQuery.of(context).size.height * 0.05,),
+                                                  Positioned(
+                                                    left: 6,
+                                                    bottom: 1,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Container(
+                                                          height: 30,
+                                                          width: 30,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white,
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: IconButton(
+                                                            style: IconButton
+                                                                .styleFrom(
+                                                              minimumSize:
+                                                                  Size.zero,
+                                                              padding:
+                                                                  EdgeInsets.zero,
+                                                            ),
+                                                            onPressed: () {},
+                                                            icon: Icon(
+                                                              Icons.phone,
+                                                              color: Colors.green,
+                                                              size: 20,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        // SizedBox(height: 8),
+                                                        Container(
+                                                          height: 30,
+                                                          width: 30,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white,
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: IconButton(
+                                                            style: IconButton
+                                                                .styleFrom(
+                                                              minimumSize:
+                                                                  Size.zero,
+                                                              padding:
+                                                                  EdgeInsets.zero,
+                                                            ),
+                                                            onPressed: () {},
+                                                            icon: Icon(
+                                                              Icons.chat,
+                                                              color: Colors
+                                                                  .blueAccent,
+                                                              size: 20,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        // SizedBox(height: 8),
+                                                        Container(
+                                                          height: 30,
+                                                          width: 30,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white,
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: IconButton(
+                                                            style: IconButton
+                                                                .styleFrom(
+                                                              minimumSize:
+                                                                  Size.zero,
+                                                              padding:
+                                                                  EdgeInsets.zero,
+                                                            ),
+                                                            onPressed: () async {
+                                                              // final result =
+                                                              //     await Navigator
+                                                              //         .push(
+                                                              //   context,
+                                                              //   MaterialPageRoute(
+                                                              //     builder:
+                                                              //         (context) =>
+                                                              //             Location(),
+                                                              //   ),
+                                                              // );
+                                                              //
+                                                              // if (result !=
+                                                              //     null) {
+                                                              //   setState(() {
+                                                              //     _selectedLocation =
+                                                              //         result;
+                                                              //   });
+                                                              // }
+                                                            },
+                                                            icon: Icon(
+                                                              Icons.location_on,
+                                                              color: Colors.red,
+                                                              size: 20,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                          )
-                                        ],
+                                            Container(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.54,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                // child: Image.network(
+                                                //   state.products[index].img,
+                                                //   "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg",
+                                                //   fit: BoxFit.cover,
+                                                // ),
+
+                                                child: asosiy_img == null &&
+                                                        state.products.length >
+                                                            index
+                                                    ? Image.network(
+                                                        "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg",
+                                                        // "images/1722061202.jpg",
+                                                        fit: BoxFit.cover,
+                                                      )
+                                                    : Image.network(
+                                                        AppConstans.BASE_URL2 +
+                                                            "/images/" +
+                                                            asosiy_img!,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                              ),
+
+                                              //polvon ui ni tugirlang lekn norm edi xay qayti kuraman
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                      });
-                case YordamProduct.error:
-                  return Center(
-                    child: Text("Internet error"),
-                  );
-              }
-            },
+                                );
+                        });
+                  case YordamProduct.error:
+                    return Center(
+                      child: Text("Internet error"),
+                    );
+                }
+              },
+            ),
           ),
         ),
       ),

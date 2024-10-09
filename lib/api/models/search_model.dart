@@ -1,11 +1,11 @@
-class ProductModel {
+class SearchModel {
   bool? status;
   String? message;
   Products? products;
 
-  ProductModel({this.status, this.message, this.products});
+  SearchModel({this.status, this.message, this.products});
 
-  ProductModel.fromJson(Map<String, dynamic> json) {
+  SearchModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
     products = json['products'] != null
