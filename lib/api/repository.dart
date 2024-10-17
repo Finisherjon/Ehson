@@ -7,7 +7,6 @@ import 'package:ehson/api/models/one_feed_model.dart';
 import 'package:ehson/api/models/product_model.dart';
 import 'package:ehson/api/models/user_model.dart';
 import 'package:ehson/api/models/yordam_model.dart';
-import 'package:ehson/screen/yordam/yordam.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/constants.dart';
@@ -15,6 +14,8 @@ import 'package:http/http.dart' as http;
 
 import 'models/get_like_model.dart';
 import 'models/search_model.dart';
+
+//tursinchi hozircha kuruvurchi uzin oshibkalani
 
 class EhsonRepository {
   Future<CategoryModel?> get_category() async {
@@ -223,7 +224,8 @@ class EhsonRepository {
     }
   }
 
-  Future<String> add_yordam(String title, String info, String phone, String image, String location) async {
+  Future<String> add_yordam(String title, String info, String phone,
+      String image, String location) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     final SharedPreferences prefs = await _prefs;
