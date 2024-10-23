@@ -85,26 +85,6 @@ class _YordamState extends State<Yordam> {
     //yana nima qmoqchisan kn anabu profil qitti bowqacha darrav save chiqadi hechnimadan oldin kn ikkaviyam birxil buladi norm
     //shuni choqirsan buldi uzi hamma olinganlarni tozalab qayta olishga zapros yuboradi kurdinmi ososngina
     BlocProvider.of<YordamBloc>(context).add(ReloadYordamEvent(date: ""));
-    // try {
-    //   setState(() {
-    //     yordamModel = null;
-    //   });
-    //   YordamModel? yordamModel_server = await EhsonRepository().getyordam();
-    //   setState(() {
-    //     server_error = false;
-    //     yordamModel = yordamModel_server;
-    //     // _controller_name.text = yordamModel!.user!.name.toString();
-    //     // if (yordamModel!.user!.phone != null) {
-    //     //   _controller_phone.text = yordamModel!.user!.phone.toString();
-    //     // }
-    //   });
-    // } catch (e) {
-    //   //agar server bilan nimadir xatolik bugan paytga server_error degan uzgaruvchi olim ui ga xatolik buganini bildirish uchun
-    //   setState(() {
-    //     server_error = true;
-    //   });
-    //   //server bilan boglanishda xatolik
-    // }
     _refreshController.refreshCompleted();
   }
 
@@ -160,7 +140,7 @@ class _YordamState extends State<Yordam> {
                         controller: _scrollController,
                         itemCount: state.islast
                             ? state.products.length
-                            : state.products.length + 1,
+                            : state.products.length + 2,
                         itemBuilder: (context, index) {
                           String? asosiy_img;
                           if (state.products.length > index) {

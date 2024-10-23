@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:ehson/api/models/one_feed_model.dart';
 import 'package:ehson/bloc/one_feed_block/one_feed_bloc.dart';
 import 'package:ehson/constants/constants.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +18,6 @@ class OneFeedPage extends StatefulWidget {
 
 final _scrollController = ScrollController();
 Timer? _debounce;
-//shu page boshla
 
 class _OneFeedPageState extends State<OneFeedPage> {
   final TextEditingController commentController = TextEditingController();

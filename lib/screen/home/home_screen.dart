@@ -16,10 +16,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../api/models/product_model.dart';
 import '../../api/repository.dart';
+import '../product info/product_info.dart';
 import '../search_page.dart';
 import '../verification/log_In_screen.dart';
 
@@ -141,6 +144,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  bool server_error = false;
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+  ProductModel? productModel;
+
+  Future<void> _onrefresh() async {
+    BlocProvider.of<HomeBloc>(context).add(ReloadProductEvent(date: ""));
+    _refreshController.refreshCompleted();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -250,11 +263,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
-                                return BlocProvider(
-                                  create: (ctx) => SearchProductBloc(),
-                                  child: SearchPage(),
-                                );
-                              }));
+                            return BlocProvider(
+                              create: (ctx) => SearchProductBloc(),
+                              child: SearchPage(),
+                            );
+                          }));
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(
@@ -457,313 +470,327 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                         return Container(
                           height: MediaQuery.of(context).size.height * 0.707,
-                          child: MasonryGridView.count(
-                              controller: _scrollController,
-                              physics: BouncingScrollPhysics(),
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                              crossAxisSpacing: 15,
-                              crossAxisCount: 2,
-                              itemCount: state.islast
-                                  ? state.products.length
-                                  : state.products.length + 2,
-                              scrollDirection: Axis.vertical,
-                              mainAxisSpacing: 10,
-                              itemBuilder: (BuildContext context, index) {
-                                if (index >= state.products.length) {
-                                  return Center(
-                                      child: CircularProgressIndicator());
-                                }
-                                //telefonchani bosa endi telefon raqam bod api bilan kelopti
-                                //bulimi? ha zabanca
-                                String? asosiy_img;
-                                if (state.products.length > index) {
-                                  if (state.products[index].img1 != null) {
-                                    asosiy_img = state.products[index].img1;
-                                  } else if (state.products[index].img2 !=
-                                      null) {
-                                    asosiy_img = state.products[index].img2;
-                                  } else if (state.products[index].img3 !=
-                                      null) {
-                                    asosiy_img = state.products[index].img3;
-                                  } else {
-                                    asosiy_img = null;
+                          child: SmartRefresher(
+                            child: MasonryGridView.count(
+                                controller: _scrollController,
+                                physics: BouncingScrollPhysics(),
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                crossAxisSpacing: 15,
+                                crossAxisCount: 2,
+                                itemCount: state.islast
+                                    ? state.products.length
+                                    : state.products.length + 2,
+                                scrollDirection: Axis.vertical,
+                                mainAxisSpacing: 10,
+                                itemBuilder: (BuildContext context, index) {
+                                  if (index >= state.products.length) {
+                                    return Center(
+                                        child: CircularProgressIndicator());
                                   }
-                                }
-                                return index >= state.products.length
-                                    ? Center(
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    : Container(
-                                        child: Stack(
-                                          children: [
-                                            InkWell(
-                                              borderRadius: BorderRadius.circular(30),
-                                              child: Container(
-                                                padding:
-                                                    EdgeInsets.only(bottom: 10),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(25),
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.1),
-                                                      blurRadius: 5,
-                                                      spreadRadius: 1,
-                                                      offset:
-                                                          const Offset(1, 1),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              25),
-                                                      child: Stack(
-                                                        children: [
-                                                          asosiy_img == null &&
-                                                                  state.products
-                                                                          .length >
-                                                                      index
-                                                              ? Image.network(
-                                                                  AppConstans
-                                                                          .BASE_URL2 +
-                                                                      "images/1722061202.jpg",
-                                                                  fit: BoxFit
-                                                                      .fitHeight,
-                                                                )
-                                                              : Image.network(
-                                                                  AppConstans
-                                                                          .BASE_URL2 +
-                                                                      "images/" +
-                                                                      asosiy_img!,
-                                                                  fit: BoxFit
-                                                                      .fitHeight,
+                                  //telefonchani bosa endi telefon raqam bod api bilan kelopti
+                                  //bulimi? ha zabanca
+                                  String? asosiy_img;
+                                  if (state.products.length > index) {
+                                    if (state.products[index].img1 != null) {
+                                      asosiy_img = state.products[index].img1;
+                                    } else if (state.products[index].img2 !=
+                                        null) {
+                                      asosiy_img = state.products[index].img2;
+                                    } else if (state.products[index].img3 !=
+                                        null) {
+                                      asosiy_img = state.products[index].img3;
+                                    } else {
+                                      asosiy_img = null;
+                                    }
+                                  }
+                                  return index >= state.products.length
+                                      ? Center(
+                                          child: CircularProgressIndicator(),
+                                        )
+                                      : Container(
+                                          child: Stack(
+                                            children: [
+                                              InkWell(
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                                child: Container(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: 10),
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            25),
+                                                    color: Colors.white,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withOpacity(0.1),
+                                                        blurRadius: 5,
+                                                        spreadRadius: 1,
+                                                        offset:
+                                                            const Offset(1, 1),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(25),
+                                                        child: Stack(
+                                                          children: [
+                                                            asosiy_img ==
+                                                                        null &&
+                                                                    state.products
+                                                                            .length >
+                                                                        index
+                                                                ? Image.network(
+                                                                    AppConstans
+                                                                            .BASE_URL2 +
+                                                                        "images/1722061202.jpg",
+                                                                    fit: BoxFit
+                                                                        .fitHeight,
+                                                                  )
+                                                                : Image.network(
+                                                                    AppConstans
+                                                                            .BASE_URL2 +
+                                                                        "images/" +
+                                                                        asosiy_img!,
+                                                                    fit: BoxFit
+                                                                        .fitHeight,
+                                                                  ),
+                                                            // Image.network(
+                                                            //   imageUrl[index],
+                                                            //   fit: BoxFit.cover,
+                                                            // ),
+                                                            Positioned(
+                                                              right: 10,
+                                                              top: 10,
+                                                              child: Container(
+                                                                height: Sizes
+                                                                        .heights(
+                                                                            context) *
+                                                                    0.04,
+                                                                width: Sizes.widths(
+                                                                        context) *
+                                                                    0.07,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  shape: BoxShape
+                                                                      .circle,
                                                                 ),
-                                                          // Image.network(
-                                                          //   imageUrl[index],
-                                                          //   fit: BoxFit.cover,
-                                                          // ),
-                                                          Positioned(
-                                                            right: 10,
-                                                            top: 10,
-                                                            child: Container(
-                                                              height: Sizes.heights(
-                                                                      context) *
-                                                                  0.04,
-                                                              width: Sizes.widths(
-                                                                      context) *
-                                                                  0.07,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: Colors
-                                                                    .white,
-                                                                shape: BoxShape
-                                                                    .circle,
-                                                              ),
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              child: IconButton(
-                                                                style: IconButton
-                                                                    .styleFrom(
-                                                                  minimumSize:
-                                                                      Size.zero,
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .zero,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  int? product_id = state
-                                                                      .products[
-                                                                          index]
-                                                                      .id;
-                                                                  bool
-                                                                      add_like =
-                                                                      await add_like_product(
-                                                                          product_id);
-
-                                                                  if (add_like) {
-                                                                    state
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                child:
+                                                                    IconButton(
+                                                                  style: IconButton
+                                                                      .styleFrom(
+                                                                    minimumSize:
+                                                                        Size.zero,
+                                                                    padding:
+                                                                        EdgeInsets
+                                                                            .zero,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    int? product_id = state
                                                                         .products[
                                                                             index]
-                                                                        .isliked = state.products[index].isliked ==
-                                                                            0
-                                                                        ? 1
-                                                                        : 0;
-                                                                  }
-                                                                  //shuni taxla
-                                                                  // state.products[index].phone
-                                                                  //qara statega phoneyam kelopti telefonchani bossa telefon qilishga utsin nomer terib shunoqa package bor
+                                                                        .id;
+                                                                    bool
+                                                                        add_like =
+                                                                        await add_like_product(
+                                                                            product_id);
 
-                                                                  //kurdinmi jura ha
+                                                                    if (add_like) {
+                                                                      state
+                                                                          .products[
+                                                                              index]
+                                                                          .isliked = state.products[index].isliked ==
+                                                                              0
+                                                                          ? 1
+                                                                          : 0;
+                                                                    }
+                                                                    //shuni taxla
+                                                                    // state.products[index].phone
+                                                                    //qara statega phoneyam kelopti telefonchani bossa telefon qilishga utsin nomer terib shunoqa package bor
 
-                                                                  //san chatga utgan payt awibka chiqopti ui bilan manimca uwani tugirla man apini update qilay getproductni xay
+                                                                    //kurdinmi jura ha
 
-                                                                  //hozir like quwish post buli faqat ui bilan integratsiya qilish kerak
-                                                                  setState(() {
-                                                                    _heartIcon =
-                                                                        !_heartIcon;
-                                                                  });
-                                                                },
-                                                                //productlani oladigan api borku uwani uzgartiramiz man usha productga like bosganmi yoqmi ushaniyam beraman keyen usha bilan aniqlaymiz
-                                                                icon: Icon(
-                                                                  state.products[index].isliked ==
-                                                                          1
-                                                                      ? Icons
-                                                                          .favorite
-                                                                      : Icons
-                                                                          .favorite_border,
-                                                                  color: Colors
-                                                                      .red,
-                                                                  size: 20,
+                                                                    //san chatga utgan payt awibka chiqopti ui bilan manimca uwani tugirla man apini update qilay getproductni xay
+
+                                                                    //hozir like quwish post buli faqat ui bilan integratsiya qilish kerak
+                                                                    setState(
+                                                                        () {
+                                                                      _heartIcon =
+                                                                          !_heartIcon;
+                                                                    });
+                                                                  },
+                                                                  //productlani oladigan api borku uwani uzgartiramiz man usha productga like bosganmi yoqmi ushaniyam beraman keyen usha bilan aniqlaymiz
+                                                                  icon: Icon(
+                                                                    state.products[index].isliked ==
+                                                                            1
+                                                                        ? Icons
+                                                                            .favorite
+                                                                        : Icons
+                                                                            .favorite_border,
+                                                                    color: Colors
+                                                                        .red,
+                                                                    size: 20,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
-                                                          ),
-                                                          Positioned(
-                                                            right: 10,
-                                                            bottom: 10,
-                                                            child: Column(
-                                                              children: [
-                                                                Container(
-                                                                  height: Sizes
-                                                                          .heights(
-                                                                              context) *
-                                                                      0.037,
-                                                                  width: Sizes.widths(
-                                                                          context) *
-                                                                      0.077,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    shape: BoxShape
-                                                                        .circle,
-                                                                  ),
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child:
-                                                                      IconButton(
-                                                                    style: IconButton
-                                                                        .styleFrom(
-                                                                      minimumSize:
-                                                                          Size.zero,
-                                                                      padding:
-                                                                          EdgeInsets
-                                                                              .zero,
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {},
-                                                                    icon: Icon(
-                                                                      Icons
-                                                                          .chat,
+                                                            Positioned(
+                                                              right: 10,
+                                                              bottom: 10,
+                                                              child: Column(
+                                                                children: [
+                                                                  Container(
+                                                                    height: Sizes.heights(
+                                                                            context) *
+                                                                        0.037,
+                                                                    width: Sizes.widths(
+                                                                            context) *
+                                                                        0.077,
+                                                                    decoration:
+                                                                        BoxDecoration(
                                                                       color: Colors
-                                                                          .blue,
-                                                                      size: IconSize
-                                                                          .smallIconSize(
-                                                                              context),
+                                                                          .white,
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                    ),
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    child:
+                                                                        IconButton(
+                                                                      style: IconButton
+                                                                          .styleFrom(
+                                                                        minimumSize:
+                                                                            Size.zero,
+                                                                        padding:
+                                                                            EdgeInsets.zero,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {},
+                                                                      icon:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .chat,
+                                                                        color: Colors
+                                                                            .blue,
+                                                                        size: IconSize.smallIconSize(
+                                                                            context),
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                                SizedBox(
-                                                                    height: 8),
-                                                                Container(
-                                                                  height: Sizes
-                                                                          .heights(
-                                                                              context) *
-                                                                      0.04,
-                                                                  width: Sizes.widths(
-                                                                          context) *
-                                                                      0.08,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    shape: BoxShape
-                                                                        .circle,
-                                                                  ),
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child:
-                                                                      IconButton(
-                                                                    style: IconButton
-                                                                        .styleFrom(
-                                                                      minimumSize:
-                                                                          Size.zero,
-                                                                      padding:
-                                                                          EdgeInsets
-                                                                              .zero,
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      makePhoneCall(state
-                                                                          .products[
-                                                                              index]
-                                                                          .phone!);
-                                                                    },
-                                                                    icon: Icon(
-                                                                      Icons
-                                                                          .phone,
+                                                                  SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  Container(
+                                                                    height: Sizes.heights(
+                                                                            context) *
+                                                                        0.04,
+                                                                    width: Sizes.widths(
+                                                                            context) *
+                                                                        0.08,
+                                                                    decoration:
+                                                                        BoxDecoration(
                                                                       color: Colors
-                                                                          .green,
-                                                                      size: IconSize
-                                                                          .smallIconSize(
-                                                                              context),
+                                                                          .white,
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                    ),
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    child:
+                                                                        IconButton(
+                                                                      style: IconButton
+                                                                          .styleFrom(
+                                                                        minimumSize:
+                                                                            Size.zero,
+                                                                        padding:
+                                                                            EdgeInsets.zero,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        makePhoneCall(state
+                                                                            .products[index]
+                                                                            .phone!);
+                                                                      },
+                                                                      icon:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .phone,
+                                                                        color: Colors
+                                                                            .green,
+                                                                        size: IconSize.smallIconSize(
+                                                                            context),
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                              ],
+                                                                ],
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
+                                                          ],
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 8,
-                                                          right: 8,
-                                                          top: 8),
-                                                      child: Text(
-                                                        state.products[index]
-                                                            .title!,
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 8,
+                                                                right: 8,
+                                                                top: 8),
+                                                        child: Text(
+                                                          state.products[index]
+                                                              .title!,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 8,
-                                                          right: 8,
-                                                          top: 8),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(' \$ free')
-                                                        ],
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 8,
+                                                                right: 8,
+                                                                top: 8),
+                                                        child: Row(
+                                                          children: [
+                                                            Text(' \$ free')
+                                                          ],
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
+                                                onTap: () {
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ProductInfo()));
+                                                },
                                               ),
-                                              onTap: () {},
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                              }),
+                                            ],
+                                          ),
+                                        );
+                                }),
+                            controller: _refreshController,
+                            onRefresh: _onrefresh,
+                          ),
                         );
                       //   GridView.builder(
                       //   gridDelegate:
@@ -1013,7 +1040,11 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => AddProductScreen()));
           },
-          child: Icon(Icons.add,color: Colors.white,size: 30,),
+          child: Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 30,
+          ),
         ),
       ),
     );
