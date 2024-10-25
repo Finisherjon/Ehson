@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ehson/adjust_size.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../api/login_api.dart';
+import '../bottom_bar.dart';
 import '../home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -64,7 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
         prefs.setString("password", password);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => BottomBar()),
+          //bulimi polvon ha davom et xay
         );
       } else {
         print("Bera xatolik haqida xabar chiqar");
@@ -87,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                height: 120,
+                height: Sizes.heights(context) * 0.17,
               ),
               Text(
                 "See waht's \nhappening in the \nworld right now.",
@@ -97,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(
-                height: 80,
+                height: Sizes.heights(context) * 0.1,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -110,8 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onTap: () async {
                         userCredential.value = await signInWithGoogle();
                         if (userCredential.value != null) {
-                          String name =
-                              userCredential.value.user!.displayName;
+                          String name = userCredential.value.user!.displayName;
                           String email = userCredential.value.user!.email;
                           String password = userCredential.value.user!.uid;
                           await login(name, email, password);
@@ -137,14 +139,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6WwgH7Nl5_AW9nDCnR2Ozb_AU3rkIbSJdAg&s'),
                             ),
                             SizedBox(
-                              width: 10,
+                              width: Sizes.widths(context) * 0.02,
                             ),
                             Text(
                               "Continue with google",
                               style: GoogleFonts.roboto(
                                 textStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 17),
+                                    fontWeight: FontWeight.bold, fontSize: 17),
                               ),
                             ),
                           ],
@@ -155,56 +156,56 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               SizedBox(
-                height: 10,
+                height: Sizes.heights(context) * 0.03,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.08,
-                    child: InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(30),
-                      child: Card(
-                        shape: StadiumBorder(
-                          side: BorderSide(
-                            color: Colors.black,
-                            width: 0.5,
-                          ),
-                        ),
-                        color: Colors.white,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.white,
-                              radius: 18, // Image radius
-                              backgroundImage: NetworkImage(
-                                  'https://1000logos.net/wp-content/uploads/2016/10/Apple-Logo.png'),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "Continue with apple",
-                              style: GoogleFonts.roboto(
-                                textStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 17),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 10,
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     SizedBox(
+              //       width: MediaQuery.of(context).size.width * 0.8,
+              //       height: MediaQuery.of(context).size.height * 0.08,
+              //       child: InkWell(
+              //         onTap: () {},
+              //         borderRadius: BorderRadius.circular(30),
+              //         child: Card(
+              //           shape: StadiumBorder(
+              //             side: BorderSide(
+              //               color: Colors.black,
+              //               width: 0.5,
+              //             ),
+              //           ),
+              //           color: Colors.white,
+              //           child: Row(
+              //             crossAxisAlignment: CrossAxisAlignment.center,
+              //             mainAxisAlignment: MainAxisAlignment.center,
+              //             children: [
+              //               CircleAvatar(
+              //                 backgroundColor: Colors.white,
+              //                 radius: 18, // Image radius
+              //                 backgroundImage: NetworkImage(
+              //                     'https://1000logos.net/wp-content/uploads/2016/10/Apple-Logo.png'),
+              //               ),
+              //               SizedBox(
+              //                 width: 10,
+              //               ),
+              //               Text(
+              //                 "Continue with apple",
+              //                 style: GoogleFonts.roboto(
+              //                   textStyle: TextStyle(
+              //                       fontWeight: FontWeight.bold,
+              //                       fontSize: 17),
+              //                 ),
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //       ),
+              //     )
+              //   ],
+              // ),
+              // SizedBox(
+              //   height: 10,
+              // ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -229,13 +230,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               SizedBox(
-                height: 10,
+                height: Sizes.heights(context) * 0.03,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-
                     width: MediaQuery.of(context).size.width * 0.8,
                     height: MediaQuery.of(context).size.height * 0.08,
                     child: InkWell(
@@ -272,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               SizedBox(
-                height: 10,
+                height: Sizes.heights(context) * 0.02,
               ),
               Text(
                 "By signing up, you agree to the Terms of Service and \nPrivacy and Policy, including Cookies Use.",
@@ -285,19 +285,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-// IconButton(
-// iconSize: 40,
-// icon: Icon(Icons.g_mobiledata),
-// onPressed: () async {
-// userCredential.value = await signInWithGoogle();
-// if (userCredential.value != null) {
-// String name = userCredential.value.user!.displayName;
-// String email = userCredential.value.user!.email;
-// String password = userCredential.value.user!.uid;
-// //bu logini uzi home utgandan keyen qilsa ham bo'ladi nu tursinchi
-// await login(name, email, password);
-// } else {
-// print("Bera google xatolik haqida xabar chiqar");
-// }
-// },
-// ),

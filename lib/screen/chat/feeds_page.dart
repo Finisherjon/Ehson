@@ -7,8 +7,11 @@ import 'package:ehson/screen/chat/one_feed_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../api/models/chat_model.dart';
 import '../../bloc/chat/chat_bloc.dart';
+import '../../mywidgets/mywidgets.dart';
 import 'add_mavzu.dart';
 
 class FeedsPage extends StatefulWidget {
@@ -60,12 +63,30 @@ class _FeedsPageState extends State<FeedsPage> {
     });
   }
 
+  bool server_error = false;
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+  ChatModel? chatModel;
+
+  Future<void> _onrefresh() async {
+    BlocProvider.of<ChatBloc>(context).add(ReloadchatEvent(date: ""));
+    _refreshController.refreshCompleted();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.add),
+            backgroundColor: Colors.blueAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Icon(
+              Icons.add,
+              size: 30,
+              color: Colors.white,
+            ),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -84,6 +105,7 @@ class _FeedsPageState extends State<FeedsPage> {
                   IconButton(
                     onPressed: () {},
                     icon: Icon(
+                      color: Colors.blueAccent,
                       Icons.filter_alt_rounded,
                       size: 25,
                     ),
@@ -91,6 +113,8 @@ class _FeedsPageState extends State<FeedsPage> {
                   IconButton(
                     onPressed: () {},
                     icon: Icon(
+                      color: Colors.blueAccent,
+
                       Icons.search,
                       size: 25,
                     ),
@@ -113,62 +137,73 @@ class _FeedsPageState extends State<FeedsPage> {
                   );
                 case ChatProduct.success:
                   if (state.products.isEmpty) {
-                    return Center(
-                      child: Text("Empty"),
+                    return Container(
+                      child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.86,
                     );
                   }
-                  return ListView.builder(
-                    controller: _scrollController,
-                    // physics: NeverScrollableScrollPhysics(),
-                    itemCount: state.islast
-                        ? state.products.length
-                        : state.products.length + 2,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return index >= state.products.length
-                          ? Center(
-                              child: CircularProgressIndicator(),
-                            )
-                          : Expanded(
-                            child: Column(
-                                children: [
-                                  ListTile(
-                                    onTap: () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                                        return BlocProvider(
-                                          create: (ctx) => OneFeedBloc(),
-                                          child: OneFeedPage(mavzu_id: state.products[index].id!),
-                                        );
-                                      }));
-                                      // Navigator.push(
-                                      //   context,
-                                      //   MaterialPageRoute(
-                                      //       builder: (context) => OneFeedPage(mavzu_id: state.products[index].id!)),
-                                      // );
-                                    },
-                                    leading: CircleAvatar(
-                                      radius: 30,
-                                      backgroundImage: NetworkImage(
-                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCaRg8BaRhDfuniljt47zyIWn03gFyE7T28w&s",
+                  return SmartRefresher(
+                    controller: _refreshController,
+                    onRefresh: _onrefresh,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      // physics: NeverScrollableScrollPhysics(),
+                      itemCount: state.islast
+                          ? state.products.length
+                          : state.products.length + 2,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return index >= state.products.length
+                            ? Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            : Expanded(
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      onTap: () {
+                                        Navigator.push(context,
+                                            MaterialPageRoute(
+                                                builder: (context) {
+                                          return BlocProvider(
+                                            create: (ctx) => OneFeedBloc(),
+                                            child: OneFeedPage(
+                                                mavzu_id:
+                                                    state.products[index].id!),
+                                          );
+                                        }));
+                                        // Navigator.push(
+                                        //   context,
+                                        //   MaterialPageRoute(
+                                        //       builder: (context) => OneFeedPage(mavzu_id: state.products[index].id!)),
+                                        // );
+                                      },
+                                      leading: CircleAvatar(
+                                        radius: 30,
+                                        backgroundImage: NetworkImage(
+                                          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCaRg8BaRhDfuniljt47zyIWn03gFyE7T28w&s",
+                                        ),
                                       ),
+                                      title: Text(state.products[index].body
+                                          .toString()),
+                                      subtitle: Text(
+                                          state.products[index].title
+                                              .toString(),
+                                          maxLines: 1),
+                                      trailing: Text("10:10"),
                                     ),
-                                    title: Text(
-                                        state.products[index].body.toString()),
-                                    subtitle: Text(
-                                        state.products[index].title.toString(),
-                                        maxLines: 1),
-                                    trailing: Text("10:10"),
-                                  ),
-                                  Container(
-                                    child: Divider(
-                                      color: Colors.grey[300],
-                                    ),
-                                    width: 400,
-                                  )
-                                ],
-                              ),
-                          );
-                    },
+                                    Container(
+                                      child: Divider(
+                                        color: Colors.grey[300],
+                                      ),
+                                      width: 400,
+                                    )
+                                  ],
+                                ),
+                              );
+                      },
+                    ),
                   );
                 case ChatProduct.error:
                   return Center(

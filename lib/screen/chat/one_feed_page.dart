@@ -1,12 +1,11 @@
 import 'dart:async';
-
-import 'package:ehson/api/models/one_feed_model.dart';
 import 'package:ehson/bloc/one_feed_block/one_feed_bloc.dart';
 import 'package:ehson/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../mywidgets/mywidgets.dart'
 class OneFeedPage extends StatefulWidget {
   int mavzu_id;
 
@@ -18,7 +17,6 @@ class OneFeedPage extends StatefulWidget {
 
 final _scrollController = ScrollController();
 Timer? _debounce;
-//shu page boshla
 
 class _OneFeedPageState extends State<OneFeedPage> {
   final TextEditingController commentController = TextEditingController();
@@ -114,8 +112,9 @@ class _OneFeedPageState extends State<OneFeedPage> {
                     );
                   case OneFeed.success:
                     if (state.feed == null) {
-                      return Center(
-                        child: Text("Empty"),
+                      return Container(
+                        child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                        width: MediaQuery.of(context).size.width,
                       );
                     }
                     //boshla

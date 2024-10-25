@@ -7,13 +7,15 @@ import 'package:ehson/api/models/one_feed_model.dart';
 import 'package:ehson/api/models/product_model.dart';
 import 'package:ehson/api/models/user_model.dart';
 import 'package:ehson/api/models/yordam_model.dart';
-import 'package:ehson/screen/yordam/yordam.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/constants.dart';
 import 'package:http/http.dart' as http;
 
 import 'models/get_like_model.dart';
+import 'models/search_model.dart';
+
+
 
 class EhsonRepository {
   Future<CategoryModel?> get_category() async {
@@ -222,7 +224,8 @@ class EhsonRepository {
     }
   }
 
-  Future<String> add_yordam(String title, String info, String phone, String image, String location) async {
+  Future<String> add_yordam(String title, String info, String phone,
+      String image, String location) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     final SharedPreferences prefs = await _prefs;
@@ -580,6 +583,51 @@ class EhsonRepository {
     } else {
       url = Uri.parse(next_page_url);
     }
+    try {
+      var response = await http.get(url, headers: {
+        "Content-Type": "application/json",
+        "Authorization": 'Bearer $token',
+      });
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          chatModel = ChatModel.fromJson(resdata);
+          return chatModel;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await getmavzu(next_page_url, date);
+          } else {
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("getData->Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print(("getData->Server error $e"));
+      throw Exception("getData->Server error $e");
+    }
+  }
+  Future<ChatModel?> getmavzu(String? next_page_url, String date) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    ChatModel? chatModel;
+    print("token bor");
+    var url;
+    if (next_page_url == null) {
+      return chatModel;
+    } else if (next_page_url == '') {
+      url = Uri.parse(AppConstans.BASE_URL + "/getfeeds");
+    } else {
+      url = Uri.parse(next_page_url);
+    }
 
     try {
       var response = await http.get(url, headers: {
@@ -721,6 +769,64 @@ class EhsonRepository {
           bool token_isrefresh = await refresh_token(token);
           if (token_isrefresh) {
             return await getonefeed(feed_id, next_page_url);
+          } else {
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("getData->Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print(("getData->Server error $e"));
+      throw Exception("getData->Server error $e");
+    }
+  }
+
+  Future<SearchModel?> searchproduct(String text, String? next_page_url) async {
+    var token = '';
+    //apini tugirla oldin
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    SearchModel? search;
+    print("token bor");
+    var url;
+    Map data;
+    {
+      data = {"text": text};
+    }
+    if (next_page_url == null) {
+      return search;
+    } else if (next_page_url == '') {
+      url = Uri.parse(AppConstans.BASE_URL + "/searchproduct");
+      //api get feedmi?
+    } else {
+      url = Uri.parse(next_page_url);
+    }
+    var body = json.encode(data);
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          search = SearchModel.fromJson(resdata);
+          return search;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await searchproduct(text, next_page_url);
           } else {
             throw Exception("Server error code ${response.statusCode}");
           }

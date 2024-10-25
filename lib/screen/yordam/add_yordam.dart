@@ -387,6 +387,9 @@ class _AddYordamState extends State<AddYordam> {
                               _savedAddressController.text = result;
                             }
                           },
+                          //phone tugmasini bossa tel busin locaksiyani bossa mapdan kursatsin
+                          //modelga bor phone bilan lokatsiya bita yangilangan kod bilan help qush san lat long olasan lokatsiyadan modeldan
+                          //buldi
                           child: Icon(
                             Icons.location_on,
                             color: Colors.red,

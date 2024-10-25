@@ -4,9 +4,12 @@ import 'package:ehson/bloc/get_like/get_like_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../api/models/get_like_model.dart';
 import '../../constants/constants.dart';
+import '../../mywidgets/mywidgets.dart';
 
 class LikePage extends StatefulWidget {
   const LikePage({super.key});
@@ -64,6 +67,17 @@ class _LikePageState extends State<LikePage> {
     }
   }
 
+  bool server_error = false;
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+  GetLIkeModel? getLIkeModel;
+
+  Future<void> _onrefresh() async {
+    BlocProvider.of<GetLikeBloc>(context).add(ReloadLikeEvent(date: ""));
+    _refreshController.refreshCompleted();
+  }
+
+  //davom et urganimi? ha
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -89,270 +103,284 @@ class _LikePageState extends State<LikePage> {
                         );
                       case GetLike.success:
                         if (state.products.isEmpty) {
-                          return Center(
-                            child: Text("Empty"),
+                          return Container(
+                            child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height * 0.86,
                           );
                         }
                         return Container(
-                          height: MediaQuery.of(context).size.height * 0.77,
-                          child: MasonryGridView.count(
-                              controller: _scrollController,
-                              physics: BouncingScrollPhysics(),
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                              crossAxisSpacing: 15,
-                              crossAxisCount: 2,
-                              itemCount: state.islast
-                                  ? state.products.length
-                                  : state.products.length + 2,
-                              scrollDirection: Axis.vertical,
-                              mainAxisSpacing: 10,
-                              itemBuilder: (BuildContext context, index) {
-                                //hozi showshma bunga phone bilan user malumotlariniyam beraman bu productni uzi kim add qiganini apini uzgartiray
-                                //yuqorisiga sariqcha busa uzgartirilgan san tomondan usha uchun tabni yopasan va qayta ochasan
-                                if (index >= state.products.length) {
-                                  return Center(
-                                      child: CircularProgressIndicator());
-                                }
-
-                                String? asosiy_img;
-                                if (state.products.length > index) {
-                                  if (state.products[index].img1 != null) {
-                                    asosiy_img = state.products[index].img1;
-                                  } else if (state.products[index].img2 !=
-                                      null) {
-                                    asosiy_img = state.products[index].img2;
-                                  } else if (state.products[index].img3 !=
-                                      null) {
-                                    asosiy_img = state.products[index].img3;
-                                  } else {
-                                    asosiy_img = null;
+                          height: MediaQuery.of(context).size.height * 0.8,
+                          child: SmartRefresher(
+                            child: MasonryGridView.count(
+                                controller: _scrollController,
+                                physics: BouncingScrollPhysics(),
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                crossAxisSpacing: 15,
+                                crossAxisCount: 2,
+                                itemCount: state.islast
+                                    ? state.products.length
+                                    : state.products.length + 2,
+                                scrollDirection: Axis.vertical,
+                                mainAxisSpacing: 10,
+                                itemBuilder: (BuildContext context, index) {
+                                  //hozi showshma bunga phone bilan user malumotlariniyam beraman bu productni uzi kim add qiganini apini uzgartiray
+                                  //yuqorisiga sariqcha busa uzgartirilgan san tomondan usha uchun tabni yopasan va qayta ochasan
+                                  if (index >= state.products.length) {
+                                    return Center(
+                                        child: CircularProgressIndicator());
                                   }
-                                }
-                                return index >= state.products.length
-                                    ? Center(
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    : Container(
-                                        child: Stack(
-                                          children: [
-                                            InkWell(
-                                              child: Container(
-                                                padding:
-                                                    EdgeInsets.only(bottom: 10),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(25),
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.1),
-                                                      blurRadius: 5,
-                                                      spreadRadius: 1,
-                                                      offset:
-                                                          const Offset(1, 1),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              25),
-                                                      child: Stack(
-                                                        children: [
-                                                          Image.network(
-                                                              "https://scotch-soda.com.au/cdn/shop/products/NOMM166920-0008-FNT.jpg?v=1712104589&width=1000"),
-                                                          asosiy_img == null &&
-                                                                  state.products
-                                                                          .length >
-                                                                      index
-                                                              ? Image.network(
-                                                                  AppConstans
-                                                                          .BASE_URL2 +
-                                                                      "images/1722061202.jpg",
-                                                                  fit: BoxFit
-                                                                      .fitHeight,
-                                                                )
-                                                              : Image.network(
-                                                                  AppConstans
-                                                                          .BASE_URL2 +
-                                                                      "images/" +
-                                                                      asosiy_img!,
-                                                                  fit: BoxFit
-                                                                      .fitHeight,
-                                                                ),
-                                                          Positioned(
-                                                            right: 10,
-                                                            top: 10,
-                                                            child: Container(
-                                                              height: 30,
-                                                              width: 30,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: Colors
-                                                                    .white,
-                                                                shape: BoxShape
-                                                                    .circle,
-                                                              ),
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              child: IconButton(
-                                                                style: IconButton
-                                                                    .styleFrom(
-                                                                  minimumSize:
-                                                                      Size.zero,
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .zero,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  setState(() {
-                                                                    _heartIcon =
-                                                                        !_heartIcon;
-                                                                  });
-                                                                },
-                                                                icon: Icon(
-                                                                  _heartIcon
-                                                                      ? Icons
-                                                                          .favorite
-                                                                      : Icons
-                                                                          .favorite_border,
+
+                                  String? asosiy_img;
+                                  if (state.products.length > index) {
+                                    if (state.products[index].img1 != null) {
+                                      asosiy_img = state.products[index].img1;
+                                    } else if (state.products[index].img2 !=
+                                        null) {
+                                      asosiy_img = state.products[index].img2;
+                                    } else if (state.products[index].img3 !=
+                                        null) {
+                                      asosiy_img = state.products[index].img3;
+                                    } else {
+                                      asosiy_img = null;
+                                    }
+                                  }
+                                  return index >= state.products.length
+                                      ? Center(
+                                          child: CircularProgressIndicator(),
+                                        )
+                                      : Container(
+                                          child: Stack(
+                                            children: [
+                                              InkWell(
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                                child: Container(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: 10),
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            25),
+                                                    color: Colors.white,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withOpacity(0.1),
+                                                        blurRadius: 5,
+                                                        spreadRadius: 1,
+                                                        offset:
+                                                            const Offset(1, 1),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(25),
+                                                        child: Stack(
+                                                          children: [
+                                                            // Image.network(
+                                                            //     "https://scotch-soda.com.au/cdn/shop/products/NOMM166920-0008-FNT.jpg?v=1712104589&width=1000"),
+                                                            asosiy_img ==
+                                                                        null &&
+                                                                    state.products
+                                                                            .length >
+                                                                        index
+                                                                ? Image.network(
+                                                                    AppConstans
+                                                                            .BASE_URL2 +
+                                                                        "images/1722061202.jpg",
+                                                                    fit: BoxFit
+                                                                        .fitHeight,
+                                                                  )
+                                                                : Image.network(
+                                                                    AppConstans
+                                                                            .BASE_URL2 +
+                                                                        "images/" +
+                                                                        asosiy_img!,
+                                                                    fit: BoxFit
+                                                                        .fitHeight,
+                                                                  ),
+                                                            Positioned(
+                                                              right: 10,
+                                                              top: 10,
+                                                              child: Container(
+                                                                height: 30,
+                                                                width: 30,
+                                                                decoration:
+                                                                    BoxDecoration(
                                                                   color: Colors
-                                                                      .red,
-                                                                  size: 20,
+                                                                      .white,
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                ),
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                child:
+                                                                    IconButton(
+                                                                  style: IconButton
+                                                                      .styleFrom(
+                                                                    minimumSize:
+                                                                        Size.zero,
+                                                                    padding:
+                                                                        EdgeInsets
+                                                                            .zero,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    setState(
+                                                                        () {
+                                                                      _heartIcon =
+                                                                          !_heartIcon;
+                                                                    });
+                                                                  },
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .favorite,
+                                                                    color: Colors
+                                                                        .red,
+                                                                    size: 20,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
-                                                          ),
-                                                          Positioned(
-                                                            right: 10,
-                                                            bottom: 10,
-                                                            child: Column(
-                                                              children: [
-                                                                Container(
-                                                                  height: 30,
-                                                                  width: 30,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    shape: BoxShape
-                                                                        .circle,
-                                                                  ),
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child:
-                                                                      IconButton(
-                                                                    style: IconButton
-                                                                        .styleFrom(
-                                                                      minimumSize:
-                                                                          Size.zero,
-                                                                      padding:
-                                                                          EdgeInsets
-                                                                              .zero,
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {},
-                                                                    icon: Icon(
-                                                                      Icons
-                                                                          .chat,
+                                                            Positioned(
+                                                              right: 10,
+                                                              bottom: 10,
+                                                              child: Column(
+                                                                children: [
+                                                                  Container(
+                                                                    height: 30,
+                                                                    width: 30,
+                                                                    decoration:
+                                                                        BoxDecoration(
                                                                       color: Colors
-                                                                          .blue,
-                                                                      size: 20,
+                                                                          .white,
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                    ),
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    child:
+                                                                        IconButton(
+                                                                      style: IconButton
+                                                                          .styleFrom(
+                                                                        minimumSize:
+                                                                            Size.zero,
+                                                                        padding:
+                                                                            EdgeInsets.zero,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {},
+                                                                      icon:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .chat,
+                                                                        color: Colors
+                                                                            .blue,
+                                                                        size:
+                                                                            20,
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                                SizedBox(
-                                                                    height: 8),
-                                                                Container(
-                                                                  height: 30,
-                                                                  width: 30,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    shape: BoxShape
-                                                                        .circle,
-                                                                  ),
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child:
-                                                                      IconButton(
-                                                                    style: IconButton
-                                                                        .styleFrom(
-                                                                      minimumSize:
-                                                                          Size.zero,
-                                                                      padding:
-                                                                          EdgeInsets
-                                                                              .zero,
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      makePhoneCall(state
-                                                                          .products[
-                                                                              index]
-                                                                          .productOwnerPhone!);
-                                                                    },
-                                                                    icon: Icon(
-                                                                      Icons
-                                                                          .phone,
+                                                                  SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                  Container(
+                                                                    height: 30,
+                                                                    width: 30,
+                                                                    decoration:
+                                                                        BoxDecoration(
                                                                       color: Colors
-                                                                          .green,
-                                                                      size: 20,
+                                                                          .white,
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                    ),
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    child:
+                                                                        IconButton(
+                                                                      style: IconButton
+                                                                          .styleFrom(
+                                                                        minimumSize:
+                                                                            Size.zero,
+                                                                        padding:
+                                                                            EdgeInsets.zero,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        makePhoneCall(state
+                                                                            .products[index]
+                                                                            .productOwnerPhone!);
+                                                                      },
+                                                                      icon:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .phone,
+                                                                        color: Colors
+                                                                            .green,
+                                                                        size:
+                                                                            20,
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                              ],
+                                                                ],
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
+                                                          ],
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 8,
-                                                          right: 8,
-                                                          top: 8),
-                                                      child: Text(
-                                                        state.products[index]
-                                                            .title!,
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 8,
+                                                                right: 8,
+                                                                top: 8),
+                                                        child: Text(
+                                                          state.products[index]
+                                                              .title!,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 8,
-                                                          right: 8,
-                                                          top: 8),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(' \$ free')
-                                                        ],
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 8,
+                                                                right: 8,
+                                                                top: 8),
+                                                        child: Row(
+                                                          children: [
+                                                            Text(' \$ free')
+                                                          ],
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
+                                                onTap: () {},
                                               ),
-                                              onTap: () {},
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                              }),
+                                            ],
+                                          ),
+                                        );
+                                }),
+                            controller: _refreshController,
+                            onRefresh: _onrefresh,
+                          ),
                         );
                       case GetLike.error:
                         return Center(

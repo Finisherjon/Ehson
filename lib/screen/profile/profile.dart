@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:ehson/api/models/user_model.dart';
 import 'package:ehson/api/repository.dart';
+import 'package:ehson/screen/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/constants.dart';
+import '../../mywidgets/mywidgets.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -38,13 +40,6 @@ class _ProfileState extends State<Profile> {
       });
       UserModel userModel_server = await EhsonRepository().get_me();
       setState(() {
-        //serverdan kegan malumot usermodelga turipti shundan olib textfieled bilan tekshirasanda
-        //tushundinmi ha boshlachi kuraychi
-        //avvalgi yozganlani yopib uwaladan kurib yozamanda
-        //hozi ishni nimadan boshlaysan
-        //postdan
-        //save knopkadan
-        //bosgan payt nima bulishidan
         server_error = false;
         userModel = userModel_server;
         _controller_name.text = userModel!.user!.name.toString();
@@ -92,7 +87,8 @@ class _ProfileState extends State<Profile> {
             backgroundColor: Colors.blue,
             textColor: Colors.white,
             fontSize: 16.0);
-        Navigator.pop(context);
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => Profile()));
       } else {
         context.loaderOverlay.hide();
 
@@ -212,7 +208,8 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
-
+  //tax buliptiku
+  //like pagedagi hamma productga like bosilgan tursin keyen yanam bossa apiga post qilib listdan uchirib tawasin
   @override
   Widget build(BuildContext context) {
     //bitta smartrefresher qoyamiz
@@ -227,9 +224,11 @@ class _ProfileState extends State<Profile> {
               centerTitle: true,
             ),
             body: server_error
-                ? Center(
-                    child: Text("Serverda xatolik"),
-                  )
+                ? Container(
+              child: MyWidget().mywidget("Serverda xatolik!"),
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 0.86,
+            )
                 : userModel == null
                     ? Center(
                         child: CircularProgressIndicator(),
@@ -325,7 +324,7 @@ class _ProfileState extends State<Profile> {
                                 ),
                               ),
                               Text(
-                                "User id: " + userModel!.user!.id.toString(),
+                                "Phone: " + userModel!.user!.phone.toString(),
                                 style: GoogleFonts.roboto(
                                   textStyle: TextStyle(
                                       fontSize: 20,
@@ -521,7 +520,7 @@ class _ProfileState extends State<Profile> {
 
                               SizedBox(
                                 height:
-                                    MediaQuery.of(context).size.height * 0.21,
+                                    MediaQuery.of(context).size.height * 0.19,
                               ),
 
                               Row(

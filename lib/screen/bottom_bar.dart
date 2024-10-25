@@ -1,4 +1,5 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:dot_navigation_bar/dot_navigation_bar.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
 import 'package:ehson/screen/chat/feeds_page.dart';
 import 'package:ehson/screen/home/home_screen.dart';
@@ -36,15 +37,38 @@ class _BottomBarState extends State<BottomBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: _widgetOptions.elementAt(_selectedIndex),
+      // bottomNavigationBar: BottomNavigationBar(
+      //
+      //   type: BottomNavigationBarType.fixed,
+      //   items: const <BottomNavigationBarItem>[
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.home),
+      //       label: 'Home',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.business),
+      //       label: 'Business',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.school),
+      //       label: 'School',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.school),
+      //       label: 'School',
+      //     ),
+      //   ],
+      //   currentIndex: _selectedIndex,
+      //   selectedItemColor: Colors.amber[800],
+      //   onTap: _onItemTapped,
+      // ),
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: Colors.transparent,
         buttonBackgroundColor: Colors.blueAccent,
         color: Colors.blueAccent,
-        height: 70,
-        animationDuration: const Duration(milliseconds: 400),
+        height: Sizes.heights(context) * 0.08,
+        animationDuration: const Duration(milliseconds: 450),
         items: <Widget>[
           Icon(
             Icons.home,
@@ -53,17 +77,17 @@ class _BottomBarState extends State<BottomBar> {
           ),
           Icon(
             Icons.favorite,
-            size: 23,
+            size: IconSize.mediumIconSize(context),
             color: Colors.white,
           ),
           Icon(
             Icons.chat,
-            size: 26,
+            size: IconSize.mediumIconSize(context),
             color: Colors.white,
           ),
           Icon(
             Icons.person,
-            size: 26,
+            size: IconSize.mediumIconSize(context),
             color: Colors.white,
           ),
         ],
