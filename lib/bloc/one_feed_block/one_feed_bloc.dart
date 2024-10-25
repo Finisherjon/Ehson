@@ -6,7 +6,6 @@ import '../../api/models/one_feed_model.dart';
 import '../../api/repository.dart';
 
 part 'one_feed_event.dart';
-
 part 'one_feed_state.dart';
 
 class OneFeedBloc extends Bloc<OneFeedEvent, OneFeedState> {

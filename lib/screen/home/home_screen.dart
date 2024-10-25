@@ -143,7 +143,6 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Could not launch $phoneNumber');
     }
   }
-
   bool server_error = false;
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);

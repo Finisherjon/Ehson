@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../mywidgets/mywidgets.dart';
-
+import '../../mywidgets/mywidgets.dart'
 class OneFeedPage extends StatefulWidget {
   int mavzu_id;
 
@@ -116,7 +115,6 @@ class _OneFeedPageState extends State<OneFeedPage> {
                       return Container(
                         child: MyWidget().mywidget("Hech narsa topilmadi!"),
                         width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.86,
                       );
                     }
                     //boshla

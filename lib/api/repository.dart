@@ -15,7 +15,7 @@ import 'package:http/http.dart' as http;
 import 'models/get_like_model.dart';
 import 'models/search_model.dart';
 
-//tursinchi hozircha kuruvurchi uzin oshibkalani
+
 
 class EhsonRepository {
   Future<CategoryModel?> get_category() async {
@@ -583,6 +583,51 @@ class EhsonRepository {
     } else {
       url = Uri.parse(next_page_url);
     }
+    try {
+      var response = await http.get(url, headers: {
+        "Content-Type": "application/json",
+        "Authorization": 'Bearer $token',
+      });
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          chatModel = ChatModel.fromJson(resdata);
+          return chatModel;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await getmavzu(next_page_url, date);
+          } else {
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("getData->Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print(("getData->Server error $e"));
+      throw Exception("getData->Server error $e");
+    }
+  }
+  Future<ChatModel?> getmavzu(String? next_page_url, String date) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    ChatModel? chatModel;
+    print("token bor");
+    var url;
+    if (next_page_url == null) {
+      return chatModel;
+    } else if (next_page_url == '') {
+      url = Uri.parse(AppConstans.BASE_URL + "/getfeeds");
+    } else {
+      url = Uri.parse(next_page_url);
+    }
 
     try {
       var response = await http.get(url, headers: {
@@ -614,6 +659,12 @@ class EhsonRepository {
       throw Exception("getData->Server error $e");
     }
   }
+
+  //qani nima qilopsan tug'rimi shu yozganim
+
+  //polvon productga like bossa post qimoqchimisan? ha kn uwani chiqoriwam get onega bor edi ha
+  //polvon oldin kur nima qimoqchisan qara productni bossa like post bulishi kerak productga utamiz
+  //product page qaysi
 
   Future<LikeModel?> getlike(String? next_page_url, String id) async {
     var token = '';

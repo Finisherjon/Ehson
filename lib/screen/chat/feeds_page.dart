@@ -41,7 +41,6 @@ class _FeedsPageState extends State<FeedsPage> {
     _debounce?.cancel();
     super.dispose();
   }
-
   //chat qani?
   //uwa hechnima kursatmayopti
   //add_chatci?
@@ -115,6 +114,7 @@ class _FeedsPageState extends State<FeedsPage> {
                     onPressed: () {},
                     icon: Icon(
                       color: Colors.blueAccent,
+
                       Icons.search,
                       size: 25,
                     ),

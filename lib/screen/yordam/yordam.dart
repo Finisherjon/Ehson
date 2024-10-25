@@ -32,6 +32,7 @@ Timer? _debounce;
 //add yordam borku ushanga lokatsiyani qerligi emas lat long save qilish kerak apiga lat long ni post qil xay
 
 class _YordamState extends State<Yordam> {
+
   LatLng? _selectedLocation;
 
   @override
@@ -41,6 +42,7 @@ class _YordamState extends State<Yordam> {
     BlocProvider.of<YordamBloc>(context).add(ReloadYordamEvent(date: ""));
     _scrollController.addListener(_onScroll);
   }
+
 
   @override
   void dispose() {
