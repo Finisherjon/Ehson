@@ -7,10 +7,12 @@ import 'package:ehson/screen/chat/one_feed_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../api/models/chat_model.dart';
 import '../../bloc/chat/chat_bloc.dart';
+import '../../constants/constants.dart';
 import '../../mywidgets/mywidgets.dart';
 import 'add_mavzu.dart';
 
@@ -21,16 +23,23 @@ class FeedsPage extends StatefulWidget {
   State<FeedsPage> createState() => _FeedsPageState();
 }
 
-final _scrollController = ScrollController();
 Timer? _debounce;
 
 class _FeedsPageState extends State<FeedsPage> {
   LatLng? _selectedLocation;
-
+  late ScrollController _scrollController;
   @override
   void initState() {
     super.initState();
     BlocProvider.of<ChatBloc>(context).add(ReloadchatEvent(date: ""));
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  String formatTimestamp(String timestamp) {
+    DateTime dateTime = DateTime.parse(timestamp); // Parse the date string
+    String formattedDate = DateFormat('dd/MM/yyyy, HH:mm').format(dateTime);
+    return formattedDate;
   }
 
   @override
@@ -97,32 +106,32 @@ class _FeedsPageState extends State<FeedsPage> {
             }),
         appBar: AppBar(
           // elevation: 2.0,
-          actions: [
-            Container(
-              margin: EdgeInsets.only(right: 10),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      color: Colors.blueAccent,
-                      Icons.filter_alt_rounded,
-                      size: 25,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      color: Colors.blueAccent,
-
-                      Icons.search,
-                      size: 25,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
+          // actions: [
+          //   Container(
+          //     margin: EdgeInsets.only(right: 10),
+          //     child: Row(
+          //       children: [
+          //         IconButton(
+          //           onPressed: () {},
+          //           icon: Icon(
+          //             color: Colors.blueAccent,
+          //             Icons.filter_alt_rounded,
+          //             size: 25,
+          //           ),
+          //         ),
+          //         IconButton(
+          //           onPressed: () {},
+          //           icon: Icon(
+          //             color: Colors.blueAccent,
+          //
+          //             Icons.search,
+          //             size: 25,
+          //           ),
+          //         )
+          //       ],
+          //     ),
+          //   ),
+          // ],
           centerTitle: true,
           title: Text("Chat"),
         ),
@@ -151,57 +160,76 @@ class _FeedsPageState extends State<FeedsPage> {
                       // physics: NeverScrollableScrollPhysics(),
                       itemCount: state.islast
                           ? state.products.length
-                          : state.products.length + 2,
+                          : state.products.length + 1,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         return index >= state.products.length
                             ? Center(
                                 child: CircularProgressIndicator(),
                               )
-                            : Expanded(
-                                child: Column(
-                                  children: [
-                                    ListTile(
-                                      onTap: () {
-                                        Navigator.push(context,
-                                            MaterialPageRoute(
-                                                builder: (context) {
-                                          return BlocProvider(
-                                            create: (ctx) => OneFeedBloc(),
-                                            child: OneFeedPage(
-                                                mavzu_id:
-                                                    state.products[index].id!),
-                                          );
-                                        }));
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //       builder: (context) => OneFeedPage(mavzu_id: state.products[index].id!)),
-                                        // );
-                                      },
-                                      leading: CircleAvatar(
-                                        radius: 30,
-                                        backgroundImage: NetworkImage(
-                                          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCaRg8BaRhDfuniljt47zyIWn03gFyE7T28w&s",
-                                        ),
-                                      ),
-                                      title: Text(state.products[index].body
-                                          .toString()),
-                                      subtitle: Text(
+                            : Column(
+                              children: [
+                                ListTile(
+                                  onTap: () {
+                                    Navigator.push(context,
+                                        MaterialPageRoute(
+                                            builder: (context) {
+                                      return BlocProvider(
+                                        create: (ctx) => OneFeedBloc(),
+                                        child: OneFeedPage(
+                                            mavzu_id:
+                                                state.products[index].id!),
+                                      );
+                                    }));
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //       builder: (context) => OneFeedPage(mavzu_id: state.products[index].id!)),
+                                    // );
+                                  },
+                                  leading: CircleAvatar(
+                                    radius: 30,
+                                    backgroundImage: state.products[index].avatar != null ? NetworkImage(
+                                        AppConstans.BASE_URL2 + "images/" +state.products[index].avatar.toString(),
+                                    ) : null,
+                                    child: state.products[index].avatar == null ? Icon(Icons.person) : SizedBox(),
+                                  ),
+                                  title: Text(state.products[index].name.toString(),style: TextStyle(fontWeight: FontWeight.bold),),
+                                  // title: Text(state.products[index].body
+                                  //     .toString()),
+                                  subtitle: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
                                           state.products[index].title
                                               .toString(),
-                                          maxLines: 1),
-                                      trailing: Text("10:10"),
-                                    ),
-                                    Container(
-                                      child: Divider(
-                                        color: Colors.grey[300],
+                                          maxLines: 1,
+                                        overflow: TextOverflow
+                                            .ellipsis,
+                                        style: TextStyle(fontSize: 14),
+
                                       ),
-                                      width: 400,
-                                    )
-                                  ],
+                                      Text(
+                                          state.products[index].body
+                                              .toString(),
+                                          maxLines: 1,
+                                        overflow: TextOverflow
+                                            .ellipsis,
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Text(formatTimestamp(state.products[index].createdAt.toString()),style: TextStyle(fontSize: 8),),
                                 ),
-                              );
+                                Container(
+                                  child: Divider(
+                                    color: Colors.grey[300],
+                                  ),
+                                  width: 400,
+                                )
+                              ],
+                            );
                       },
                     ),
                   );

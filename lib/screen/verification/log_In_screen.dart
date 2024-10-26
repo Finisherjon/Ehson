@@ -86,18 +86,31 @@ class _LoginScreenState extends State<LoginScreen> {
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 35),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
                 height: Sizes.heights(context) * 0.17,
               ),
-              Text(
-                "See waht's \nhappening in the \nworld right now.",
-                style: GoogleFonts.roboto(
-                  textStyle:
-                      TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Assalomu aleykum!",
+                    style: GoogleFonts.roboto(
+                      textStyle:
+                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Text(
+                    "Dasturdan foydalanish uchun iltimos ro'yxatdan o'ting!",
+                    style: GoogleFonts.roboto(
+                      textStyle:
+                      TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(
                 height: Sizes.heights(context) * 0.1,
@@ -142,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: Sizes.widths(context) * 0.02,
                             ),
                             Text(
-                              "Continue with google",
+                              "Google orqali kirish",
                               style: GoogleFonts.roboto(
                                 textStyle: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 17),
@@ -206,78 +219,78 @@ class _LoginScreenState extends State<LoginScreen> {
               // SizedBox(
               //   height: 10,
               // ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.36,
-                    child: Divider(
-                      color: Colors.grey,
-                      thickness: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text("Or"),
-                  ),
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.36,
-                    child: Divider(
-                      color: Colors.grey,
-                      thickness: 1,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: Sizes.heights(context) * 0.03,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.08,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(30),
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                      },
-                      child: Card(
-                        shape: StadiumBorder(
-                          side: BorderSide(
-                            color: Colors.white,
-                            width: 0.5,
-                          ),
-                        ),
-                        color: Colors.blue,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Create account",
-                              style: GoogleFonts.roboto(
-                                textStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 17,
-                                    color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(
-                height: Sizes.heights(context) * 0.02,
-              ),
-              Text(
-                "By signing up, you agree to the Terms of Service and \nPrivacy and Policy, including Cookies Use.",
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     Container(
+              //       width: MediaQuery.of(context).size.width * 0.36,
+              //       child: Divider(
+              //         color: Colors.grey,
+              //         thickness: 1,
+              //       ),
+              //     ),
+              //     Padding(
+              //       padding: const EdgeInsets.symmetric(horizontal: 10),
+              //       child: Text("Or"),
+              //     ),
+              //     Container(
+              //       width: MediaQuery.of(context).size.width * 0.36,
+              //       child: Divider(
+              //         color: Colors.grey,
+              //         thickness: 1,
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              // SizedBox(
+              //   height: Sizes.heights(context) * 0.03,
+              // ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     SizedBox(
+              //       width: MediaQuery.of(context).size.width * 0.8,
+              //       height: MediaQuery.of(context).size.height * 0.08,
+              //       child: InkWell(
+              //         borderRadius: BorderRadius.circular(30),
+              //         onTap: () {
+              //           HapticFeedback.selectionClick();
+              //         },
+              //         child: Card(
+              //           shape: StadiumBorder(
+              //             side: BorderSide(
+              //               color: Colors.white,
+              //               width: 0.5,
+              //             ),
+              //           ),
+              //           color: Colors.blue,
+              //           child: Row(
+              //             crossAxisAlignment: CrossAxisAlignment.center,
+              //             mainAxisAlignment: MainAxisAlignment.center,
+              //             children: [
+              //               Text(
+              //                 "Create account",
+              //                 style: GoogleFonts.roboto(
+              //                   textStyle: TextStyle(
+              //                       fontWeight: FontWeight.bold,
+              //                       fontSize: 17,
+              //                       color: Colors.white),
+              //                 ),
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //       ),
+              //     )
+              //   ],
+              // ),
+              // SizedBox(
+              //   height: Sizes.heights(context) * 0.02,
+              // ),
+              // Text(
+              //   "By signing up, you agree to the Terms of Service and \nPrivacy and Policy, including Cookies Use.",
+              //   style: TextStyle(color: Colors.grey, fontSize: 12),
+              // ),
             ],
           ),
         ),

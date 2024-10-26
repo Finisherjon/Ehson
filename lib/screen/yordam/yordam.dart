@@ -142,7 +142,7 @@ class _YordamState extends State<Yordam> {
                         controller: _scrollController,
                         itemCount: state.islast
                             ? state.products.length
-                            : state.products.length + 2,
+                            : state.products.length + 1,
                         itemBuilder: (context, index) {
                           String? asosiy_img;
                           if (state.products.length > index) {
@@ -184,16 +184,21 @@ class _YordamState extends State<Yordam> {
                                                     mainAxisAlignment:
                                                         MainAxisAlignment.center,
                                                     children: [
-                                                      Text(
-                                                        state
-                                                            .products[index].title
-                                                            .toString(),
-                                                        style: GoogleFonts.roboto(
-                                                          textStyle: TextStyle(
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: Text(
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          state
+                                                              .products[index].title
+                                                              .toString(),
+                                                          style: GoogleFonts.roboto(
+                                                            textStyle: TextStyle(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
                                                         ),
                                                       ),
                                                       SizedBox(
@@ -206,15 +211,18 @@ class _YordamState extends State<Yordam> {
                                                           color: Colors.grey[400],
                                                         ),
                                                       ),
-                                                      Text(
-                                                        state.products[index].info
-                                                            .toString(),
-                                                        maxLines: 3,
-                                                        overflow:
-                                                            TextOverflow.ellipsis,
-                                                        style: GoogleFonts.roboto(
-                                                          textStyle: TextStyle(
-                                                            fontSize: 10,
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: Text(
+                                                          state.products[index].info
+                                                              .toString(),
+                                                          maxLines: 2,
+                                                          overflow:
+                                                              TextOverflow.ellipsis,
+                                                          style: GoogleFonts.roboto(
+                                                            textStyle: TextStyle(
+                                                              fontSize: 10,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),

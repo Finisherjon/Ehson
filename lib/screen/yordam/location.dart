@@ -123,7 +123,7 @@ class _LocationState extends State<Location> {
       }
 
       setState(() {
-        _addressController.text = address.trim();
+        // _addressController.text = address.trim();
       });
     }
   }
@@ -156,15 +156,15 @@ class _LocationState extends State<Location> {
   }
 
   void _saveCoordinates() {
-    String address = _addressController.text;
-    if (address.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Manzil bo\'sh bo\'lishi mumkin emas'),
-        ),
-      );
-      return;
-    }
+    // String address = _addressController.text;
+    // if (address.isEmpty) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text('Manzil bo\'sh bo\'lishi mumkin emas'),
+    //     ),
+    //   );
+    //   return;
+    // }
 
     if(_selectedMarker == null){
       ScaffoldMessenger.of(context).showSnackBar(
@@ -199,40 +199,43 @@ class _LocationState extends State<Location> {
               target: _currentPosition,
               zoom: 15.0,
             ),
+
+            myLocationButtonEnabled: true,
+            myLocationEnabled: true,
             markers: _selectedMarker != null ? {_selectedMarker!} : {},
             onTap: _onTap,
           ),
-          Positioned(
-            top: 20,
-            left: 20,
-            right: 20,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      hintText: "Manzilni kiriting",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 12.0),
-                    ),
-                    onSubmitted: (value) {
-                      _searchAndNavigate();
-                    },
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: _searchAndNavigate,
-                ),
-              ],
-            ),
-          ),
+          // Positioned(
+          //   top: 20,
+          //   left: 20,
+          //   right: 20,
+          //   child: Row(
+          //     children: [
+          //       Expanded(
+          //         child: TextField(
+          //           controller: _addressController,
+          //           decoration: InputDecoration(
+          //             hintText: "Manzilni kiriting",
+          //             border: OutlineInputBorder(
+          //               borderRadius: BorderRadius.circular(8.0),
+          //             ),
+          //             filled: true,
+          //             fillColor: Colors.white,
+          //             contentPadding: EdgeInsets.symmetric(
+          //                 horizontal: 16.0, vertical: 12.0),
+          //           ),
+          //           onSubmitted: (value) {
+          //             _searchAndNavigate();
+          //           },
+          //         ),
+          //       ),
+          //       IconButton(
+          //         icon: Icon(Icons.search),
+          //         onPressed: _searchAndNavigate,
+          //       ),
+          //     ],
+          //   ),
+          // ),
           Positioned(
             bottom: 20,
             left: 20,

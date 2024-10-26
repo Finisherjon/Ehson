@@ -63,7 +63,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       //loading dialog chiqarish kerak
       context.loaderOverlay.show();
 
-      String addProduct = await add_product(title, info, category_id, rasm1);
+      String addProduct = await add_product(title, info, category_id,city_id, rasm1);
       if (addProduct.contains("Success")) {
         context.loaderOverlay.hide();
         Fluttertoast.showToast(
@@ -249,16 +249,24 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   final List<String> items = [];
+  final List<String> cities = [];
   String? selectedValue;
+  String? selectedValue_city;
   int category_id = 0;
+  int city_id = 0;
 
   Future<String> add_product(
-      String title, String info, int category_id, String? img1) async {
+      String title, String info, int category_id, int city_id,String? img1) async {
     var uri = Uri.parse(AppConstans.BASE_URL + '/addproduct');
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
     Map data = {
       "title": title,
       "info": info,
       "category_id": category_id,
+      "city_id": city_id,
       "img1": img1,
     };
     var body = json.encode(data);
@@ -266,12 +274,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
     try {
       final response = await http.post(
         uri,
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json","Authorization": 'Bearer $token',},
         body: body,
       );
 
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
+        print(resdata);
         if (resdata["status"] == true) {
           return "Success";
         } else {
@@ -304,11 +313,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
             builder: (context, state) {
               if (state is AddProductSuccess) {
                 items.clear();
+                cities.clear();
                 for (var category in state.categoryModel.categories!) {
                   items.add(category.name.toString());
                 }
+                for (var city in state.categoryModel.cities!) {
+                  cities.add(city.name.toString());
+                }
                 selectedValue = items.first;
+                selectedValue_city = cities.first;
                 category_id = state.categoryModel.categories!.first.id!;
+                city_id = state.categoryModel.cities!.first.id!;
                 return LoaderOverlay(
                   useDefaultLoading: false,
                   child: SingleChildScrollView(
@@ -502,6 +517,98 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                     .firstWhere((category) =>
                                         category.name == selectedValue);
                                 category_id = cat.id!;
+                              },
+                              buttonStyleData: const ButtonStyleData(
+                                padding: EdgeInsets.only(right: 8),
+                              ),
+                              iconStyleData: const IconStyleData(
+                                icon: Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.black45,
+                                ),
+                                iconSize: 24,
+                              ),
+                              dropdownStyleData: DropdownStyleData(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                              menuItemStyleData: const MenuItemStyleData(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(
+                            height: 10,
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Text(
+                              "Shaharlar",
+                              style: GoogleFonts.roboto(
+                                  textStyle: TextStyle(fontSize: 20)),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: DropdownButtonFormField2<String>(
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                contentPadding:
+                                const EdgeInsets.symmetric(vertical: 16),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                              value: cities.first,
+                              hint: const Text(
+                                'Shaharni tanlang',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              items: cities
+                                  .map((item) => DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(
+                                  item,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ))
+                                  .toList(),
+                              validator: (value) {
+                                if (value == null) {
+                                  return 'Please select gender.';
+                                }
+                                return null;
+                              },
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedValue_city = value.toString();
+
+                                  Cities citis = state
+                                      .categoryModel.cities!
+                                      .firstWhere((city) =>
+                                      city.name == selectedValue_city);
+
+                                  city_id = citis.id!;
+                                  print(city_id);
+                                });
+                              },
+                              onSaved: (value) {
+                                selectedValue_city = value.toString();
+                                Cities citis = state
+                                    .categoryModel.cities!
+                                    .firstWhere((city) =>
+                                city.name == selectedValue_city);
+
+                                city_id = citis.id!;
                               },
                               buttonStyleData: const ButtonStyleData(
                                 padding: EdgeInsets.only(right: 8),

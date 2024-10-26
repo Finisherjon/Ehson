@@ -35,7 +35,7 @@ class Products {
   String? nextPageUrl;
   String? path;
   int? perPage;
-  Null? prevPageUrl;
+  String? prevPageUrl;
   int? to;
   int? total;
 
@@ -109,8 +109,8 @@ class Data {
   String? title;
   String? info;
   String? img1;
-  Null? img2;
-  Null? img3;
+  String? img2;
+  String? img3;
   int? categoryId;
   bool? status;
   String? createdAt;

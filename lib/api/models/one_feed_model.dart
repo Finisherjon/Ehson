@@ -224,7 +224,7 @@ class Data {
   String? body;
   String? createdAt;
   String? updatedAt;
-  Null? replyUserId;
+  String? replyUserId;
   String? commentOwnerUserName;
   String? commentOwnerUserAvatar;
 

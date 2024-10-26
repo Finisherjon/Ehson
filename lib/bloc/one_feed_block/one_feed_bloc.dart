@@ -21,7 +21,7 @@ class OneFeedBloc extends Bloc<OneFeedEvent, OneFeedState> {
         final product_response = await EhsonRepository()
             .getonefeed(event.feed_id, state.nextPageUrl);
 
-        return product_response!.feedData!.feedComments!.data!.isEmpty
+        return !product_response!.status!
             ? emit(state.copyWith(status: OneFeed.success, islast: true))
             : emit(state.copyWith(
                 nextPageUrl:

@@ -1,5 +1,4 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:dot_navigation_bar/dot_navigation_bar.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
 import 'package:ehson/screen/chat/feeds_page.dart';
 import 'package:ehson/screen/home/home_screen.dart';

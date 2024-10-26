@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ehson/api/models/category_model.dart';
 import 'package:ehson/api/models/chat_model.dart';
 import 'package:ehson/api/models/like_model.dart';
+import 'package:ehson/api/models/one_comment_model.dart';
 import 'package:ehson/api/models/one_feed_model.dart';
 import 'package:ehson/api/models/product_model.dart';
 import 'package:ehson/api/models/user_model.dart';
@@ -141,7 +142,6 @@ class EhsonRepository {
         "Authorization": 'Bearer $token',
       });
       final resdata = json.decode(utf8.decode(response.bodyBytes));
-      print(resdata);
       if (response.statusCode == 200) {
         if (resdata['status']) {
           getLIkeModel = GetLIkeModel.fromJson(resdata);
@@ -375,13 +375,13 @@ class EhsonRepository {
     }
   }
 
-  Future<String> add_commnet(int feed_id, String body_text) async {
+  Future<OneCommentModel?> add_commnet(int feed_id, String body_text) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     final SharedPreferences prefs = await _prefs;
     token = prefs.getString('bearer_token') ?? '';
     var uri = Uri.parse(AppConstans.BASE_URL + '/addcomment');
-
+    OneCommentModel? oneCommentModel;
     Map data;
     {
       data = {"feed_id": feed_id, "body": body_text};
@@ -401,7 +401,8 @@ class EhsonRepository {
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata["status"] == true) {
-          return "Success";
+          oneCommentModel = OneCommentModel.fromJson(resdata);
+          return oneCommentModel;
         } else if (resdata['status'] == false &&
             resdata['message'].toString().contains("Token expired")) {
           bool token_isrefresh = await refresh_token(token);
@@ -409,17 +410,21 @@ class EhsonRepository {
             //user id shart yoq ekan hozi tugirlaymz
             return await add_commnet(feed_id, body_text);
           } else {
-            return "Error: ${response.statusCode}";
+            print("Server error code ${response.statusCode}");
+            throw Exception("Server error code ${response.statusCode}");
           }
         } else {
-          return "Error: ${response.statusCode}";
+          print(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
         }
       } else {
-        return "Error: ${response.statusCode}";
+        throw Exception("Server error ${response.statusCode}");
       }
     } catch (e) {
       print("Error: $e");
-      return "Exception: $e";
+      throw Exception("Server error $e");
     }
   }
 
@@ -613,52 +618,6 @@ class EhsonRepository {
       throw Exception("getData->Server error $e");
     }
   }
-  Future<ChatModel?> getmavzu(String? next_page_url, String date) async {
-    var token = '';
-    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-    final SharedPreferences prefs = await _prefs;
-    token = prefs.getString('bearer_token') ?? '';
-    ChatModel? chatModel;
-    print("token bor");
-    var url;
-    if (next_page_url == null) {
-      return chatModel;
-    } else if (next_page_url == '') {
-      url = Uri.parse(AppConstans.BASE_URL + "/getfeeds");
-    } else {
-      url = Uri.parse(next_page_url);
-    }
-
-    try {
-      var response = await http.get(url, headers: {
-        "Content-Type": "application/json",
-        "Authorization": 'Bearer $token',
-      });
-      final resdata = json.decode(utf8.decode(response.bodyBytes));
-      if (response.statusCode == 200) {
-        if (resdata['status']) {
-          chatModel = ChatModel.fromJson(resdata);
-          return chatModel;
-        } else if (resdata['status'] == false &&
-            resdata['message'].toString().contains("Token expired")) {
-          bool token_isrefresh = await refresh_token(token);
-          if (token_isrefresh) {
-            return await getmavzu(next_page_url, date);
-          } else {
-            throw Exception("Server error code ${response.statusCode}");
-          }
-        } else {
-          throw Exception(
-              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
-        }
-      } else {
-        throw Exception("getData->Server error code ${response.statusCode}");
-      }
-    } catch (e) {
-      print(("getData->Server error $e"));
-      throw Exception("getData->Server error $e");
-    }
-  }
 
   //qani nima qilopsan tug'rimi shu yozganim
 
@@ -735,7 +694,7 @@ class EhsonRepository {
     var url;
     Map data;
     {
-      data = {"feed_id": 3};
+      data = {"feed_id": feed_id};
     }
     if (next_page_url == null) {
       return onefeed;

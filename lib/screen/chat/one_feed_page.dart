@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'package:ehson/api/models/one_comment_model.dart';
 import 'package:ehson/bloc/one_feed_block/one_feed_bloc.dart';
 import 'package:ehson/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
-import '../../mywidgets/mywidgets.dart'
+import '../../api/models/one_feed_model.dart';
+import '../../api/repository.dart';
+import '../../mywidgets/mywidgets.dart';
 class OneFeedPage extends StatefulWidget {
   int mavzu_id;
 
@@ -15,7 +21,7 @@ class OneFeedPage extends StatefulWidget {
   State<OneFeedPage> createState() => _OneFeedPageState();
 }
 
-final _scrollController = ScrollController();
+late ScrollController _scrollController;
 Timer? _debounce;
 
 class _OneFeedPageState extends State<OneFeedPage> {
@@ -23,22 +29,52 @@ class _OneFeedPageState extends State<OneFeedPage> {
 
   List<OneFeedState> comments = [];
 
-  void addComment(int food_id, String body) {
-    //mana malumotla bor yana nima muammo?
-    // setState(() {
-    //   comments.add(OneFeedState(
-    //       feed_comment:
-    //   ));
-    // });
+  Future<Data?> addComment(int food_id, String body) async{
+    context.loaderOverlay.show();
+    OneCommentModel? add_comment = await EhsonRepository().add_commnet(food_id,body);
+    if(add_comment != null){
+      context.loaderOverlay.hide();
+      Data data = new Data(
+        body: add_comment.comment!.body,
+        id: add_comment.comment!.id,
+        commentOwnerUserAvatar: add_comment.comment!.commentOwnerUserAvatar,
+        commentOwnerUserName: add_comment.comment!.commentOwnerUserName,
+        feedId: add_comment.comment!.feedId,
+        userId: add_comment.comment!.userId,
+        createdAt: add_comment.comment!.createdAt
+      );
+      feed_comment_loc.add(data);
+      return data;
+    }
+    else {
+      context.loaderOverlay.hide();
+      Fluttertoast.showToast(
+          msg: "Serverda xatolik qayta urunib ko'ring!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return null;
+    }
   }
 
   //nima qimoqchisan ?
   // comment quwmoqchiman lekn malumotlani qerdan oliwni bimayopman
 
+  String formatTimestamp(String timestamp) {
+    DateTime dateTime = DateTime.parse(timestamp); // Parse the date string
+    String formattedDate = DateFormat('dd/MM/yyyy, HH:mm').format(dateTime);
+    return formattedDate;
+  }
+
   @override
   void initState() {
-    BlocProvider.of<OneFeedBloc>(context).add(ReloadOneFeedEvent(feed_id: 0));
     super.initState();
+    BlocProvider.of<OneFeedBloc>(context).add(ReloadOneFeedEvent(feed_id: widget.mavzu_id));
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -63,42 +99,44 @@ class _OneFeedPageState extends State<OneFeedPage> {
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (_isNearBottom()) {
         print("Keldi");
-        BlocProvider.of<OneFeedBloc>(context).add(GetOneFeedEvent(feed_id: 0));
+        BlocProvider.of<OneFeedBloc>(context).add(GetOneFeedEvent(feed_id: widget.mavzu_id));
       }
     });
   }
+
+  List<Data> feed_comment_loc = [];
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          actions: [
-            Container(
-              margin: EdgeInsets.only(right: 10),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.mail,
-                      size: 25,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.menu_outlined,
-                      size: 25,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
+          // actions: [
+          //   Container(
+          //     margin: EdgeInsets.only(right: 10),
+          //     child: Row(
+          //       children: [
+          //         IconButton(
+          //           onPressed: () {},
+          //           icon: Icon(
+          //             Icons.mail,
+          //             size: 25,
+          //           ),
+          //         ),
+          //         SizedBox(
+          //           width: 10,
+          //         ),
+          //         IconButton(
+          //           onPressed: () {},
+          //           icon: Icon(
+          //             Icons.menu_outlined,
+          //             size: 25,
+          //           ),
+          //         )
+          //       ],
+          //     ),
+          //   ),
+          // ],
         ),
         body: SafeArea(
           child: Padding(
@@ -127,13 +165,10 @@ class _OneFeedPageState extends State<OneFeedPage> {
                             children: [
                               CircleAvatar(
                                 radius: 40, // Customize the size of the avatar
-                                backgroundImage: NetworkImage(state
-                                            .feedOwner!.avatar ==
-                                        null
-                                    ? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCaRg8BaRhDfuniljt47zyIWn03gFyE7T28w&s'
-                                    : AppConstans.BASE_URL2 +
-                                        "images/" +
-                                        state.feedOwner!.avatar.toString()),
+                                backgroundImage: state.feedOwner!.avatar != null ? NetworkImage(
+                                  AppConstans.BASE_URL2 + "images/" +state.feedOwner!.avatar.toString(),
+                                ) : null,
+                                child: state.feedOwner!.avatar == null ? Icon(Icons.person,size: 40,) : SizedBox(),
                               ),
                               SizedBox(width: 16),
                               // Add space between the avatar and text
@@ -153,7 +188,7 @@ class _OneFeedPageState extends State<OneFeedPage> {
                                         state.feedOwner!.name.toString()),
                                     SizedBox(height: 5),
                                     Text(
-                                      "19:04 13 mar.2023",
+                                      formatTimestamp(state.feed!.createdAt.toString()),
                                       style: TextStyle(
                                           fontSize: 14,
                                           color: Colors.grey[600],
@@ -254,118 +289,114 @@ class _OneFeedPageState extends State<OneFeedPage> {
                         //umimiy pagega berib kur endi xay
 
                         Expanded(
-                          child: ListView.builder(
-                            physics: BouncingScrollPhysics(),
-                            controller: _scrollController,
-                            itemCount: state.islast
-                                ? state.feed_comment.length
-                                : state.feed_comment.length + 2,
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) {
-                              //qaysi imageni tugirlayopsan?
+                          child: LoaderOverlay(
+                            child: ListView.builder(
+                              physics: BouncingScrollPhysics(),
+                              controller: _scrollController,
+                              itemCount: state.islast
+                                  ? state.feed_comment.length
+                                  : state.feed_comment.length + 1,
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) {
+                                feed_comment_loc.addAll(state.feed_comment);
+                                //qaysi imageni tugirlayopsan?
 
-                              // String? img;
-                              // if (state.products.length > index) {
-                              //   if (state.products[index].img != null) {
-                              //     asosiy_img = state.products[index].img;
-                              //   } else {
-                              //     asosiy_img = "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg";
-                              //   }
-                              // }
+                                // String? img;
+                                // if (state.products.length > index) {
+                                //   if (state.products[index].img != null) {
+                                //     asosiy_img = state.products[index].img;
+                                //   } else {
+                                //     asosiy_img = "https://www.shutterstock.com/image-photo/two-poor-african-children-front-600nw-2123588717.jpg";
+                                //   }
+                                // }
 
-                              return index >= state.feed_comment.length
-                                  ? Center(
-                                      child: CircularProgressIndicator(),
-                                    )
-                                  //kurchi boshqa joylarini oldin kur qerni uzgartiropsan keyen uzgartirda xay
-                                  //hozi qaramasam kuni buyi urnaysan oldin yaxshilab qara nimani qoyopsan keyen modelga qara usha malumot qaysi
-                                  //endi commentni scrollini qilish kerak keyen add comment qiganda bera qo'shilishi kerak boshlachi
-                                  : Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              //serverga bitta rasm yoq shunga shunay qilopti
-                                              CircleAvatar(
-                                                backgroundImage: NetworkImage(state
-                                                            .feedOwner!
-                                                            .avatar ==
-                                                        null
-                                                    ? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCaRg8BaRhDfuniljt47zyIWn03gFyE7T28w&s'
-                                                    : AppConstans.BASE_URL2 +
-                                                        "images/" +
-                                                        state
-                                                            .feed_comment[index]
-                                                            .commentOwnerUserAvatar
-                                                            .toString()),
-                                                radius: 20,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        state
-                                                            .feed_comment[index]
-                                                            .commentOwnerUserName!,
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                      SizedBox(width: 5),
-                                                      // Text('- ${comment.points}'),
-                                                    ],
-                                                  ),
-                                                  Text(state.feed_comment[index]
-                                                      .body!),
-                                                ],
-                                              ),
-                                              Spacer(),
-                                              Text(
-                                                state.feed_comment[index]
-                                                    .createdAt!,
-                                                // "${comment.timestamp.hour}:${comment.timestamp.minute.toString().padLeft(2, '0')} "
-                                                //     "${comment.timestamp.day} ${_monthToString(comment.timestamp.month)} ${comment.timestamp.year}",
-                                                style: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: 12),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              IconButton(
-                                                  icon: Icon(Icons.reply),
-                                                  onPressed: () {}),
-                                              Text('javob berish',
+                                return index >= state.feed_comment.length
+                                    ? Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    //kurchi boshqa joylarini oldin kur qerni uzgartiropsan keyen uzgartirda xay
+                                    //hozi qaramasam kuni buyi urnaysan oldin yaxshilab qara nimani qoyopsan keyen modelga qara usha malumot qaysi
+                                    //endi commentni scrollini qilish kerak keyen add comment qiganda bera qo'shilishi kerak boshlachi
+                                    : Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                //serverga bitta rasm yoq shunga shunay qilopti
+                                                CircleAvatar(
+                                                  backgroundImage: state.feed_comment[index].commentOwnerUserAvatar != null ? NetworkImage(
+                                                    AppConstans.BASE_URL2 + "images/" +state.feed_comment[index].commentOwnerUserAvatar.toString(),
+                                                  ) : null,
+                                                  child: state.feed_comment[index].commentOwnerUserAvatar == null ? Icon(Icons.person) : SizedBox(),
+                                                  radius: 20,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          state
+                                                              .feed_comment[index]
+                                                              .commentOwnerUserName!,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        SizedBox(width: 5),
+                                                        // Text('- ${comment.points}'),
+                                                      ],
+                                                    ),
+                                                    Text(state.feed_comment[index]
+                                                        .body!),
+                                                  ],
+                                                ),
+                                                Spacer(),
+                                                Text(
+                                                  formatTimestamp(state.feed_comment[index]
+                                    .createdAt!),
+                                                  // "${comment.timestamp.hour}:${comment.timestamp.minute.toString().padLeft(2, '0')} "
+                                                  //     "${comment.timestamp.day} ${_monthToString(comment.timestamp.month)} ${comment.timestamp.year}",
                                                   style: TextStyle(
-                                                      color: Colors.blue)),
-                                              // Spacer(),
-                                              // IconButton(
-                                              //     icon: Icon(Icons.thumb_up), onPressed: () {}),
-                                              // Text("20"),
-                                              // SizedBox(width: 10),
-                                              // IconButton(
-                                              //     icon: Icon(Icons.delete, color: Colors.red),
-                                              //     onPressed: () {}),
-                                            ],
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                          ),
-                                          // if(){}
-                                          //taxku bu pageni dizayni replyniki yozganga cjiqaykonniki
-                                        ],
-                                      ),
-                                    );
-                            },
+                                                      color: Colors.grey,
+                                                      fontSize: 12),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 10),
+                                            Row(
+                                              children: [
+                                                IconButton(
+                                                    icon: Icon(Icons.reply),
+                                                    onPressed: () {}),
+                                                Text('javob berish',
+                                                    style: TextStyle(
+                                                        color: Colors.blue)),
+                                                // Spacer(),
+                                                // IconButton(
+                                                //     icon: Icon(Icons.thumb_up), onPressed: () {}),
+                                                // Text("20"),
+                                                // SizedBox(width: 10),
+                                                // IconButton(
+                                                //     icon: Icon(Icons.delete, color: Colors.red),
+                                                //     onPressed: () {}),
+                                              ],
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                            ),
+                                            // if(){}
+                                            //taxku bu pageni dizayni replyniki yozganga cjiqaykonniki
+                                          ],
+                                        ),
+                                      );
+                              },
+                            ),
                           ),
                         ),
 
@@ -392,11 +423,20 @@ class _OneFeedPageState extends State<OneFeedPage> {
                                   size: 30,
                                   color: Colors.blueAccent,
                                 ),
-                                onPressed: () {
+                                onPressed: () async{
                                   if (commentController.text.isNotEmpty) {
                                     //food_id bilan body kerak
-                                    addComment(widget.mavzu_id,
+                                    Data? data = await addComment(widget.mavzu_id,
                                         commentController.text);
+                                    if(data!=null){
+                                      print("Keldi");
+                                      setState(() {
+                                        state.feed_comment.add(data);
+                                        commentController.text = "";
+                                      });
+
+                                    }
+
                                   }
                                 },
                               ),
