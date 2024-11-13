@@ -1,5 +1,6 @@
 import 'package:ehson/bloc/add_product/add_product_bloc.dart';
 import 'package:ehson/bloc/chat/chat_bloc.dart';
+import 'package:ehson/bloc/chat_list/chat_list_bloc.dart';
 import 'package:ehson/bloc/get_like/get_like_bloc.dart';
 import 'package:ehson/bloc/homebloc/home_bloc.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
@@ -56,7 +57,12 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => ChatBloc(),
         ),
-        BlocProvider(create: (context) => GetLikeBloc())
+        BlocProvider(
+          create: (context) => GetLikeBloc(),
+        ),
+        BlocProvider(
+          create: (context) => ChatListBloc(),
+        )
       ],
       // create: (context) => AddProductBloc(),
       child: MaterialApp(
@@ -111,7 +117,7 @@ class MyApp extends StatelessWidget {
 //ichiga kirganiniyam tugirlaymiz keyen
 //hozi nima muammo
 //bulli hozirgachaui kurinmay utirodida uwaanga chalkaw hammasi anabu rasmni qerdan olamiz
-//mavzu bor chat bor bu qaysi biri hozi mavzumi? birinchi chiqaykon
+//mavzu bor feed bor bu qaysi biri hozi mavzumi? birinchi chiqaykon
 //ichiga kirsa shunay chiqsindi shuni uini taxla
 //qarin tax manabu rasmni keyin qoyamizmi xafoydalanuvchilani
 //ichiga kirsa shunay chiqsin shuni taxla xay

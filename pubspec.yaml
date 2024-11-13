@@ -56,6 +56,7 @@ dependencies:
   url_launcher: ^6.3.0
   dot_navigation_bar: ^1.0.2
   cached_network_image: ^3.2.3
+  socket_io_client: ^3.0.1
   intl: ^0.18.0
 
 #  location: ^7.0.0

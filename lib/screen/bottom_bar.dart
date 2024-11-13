@@ -1,13 +1,14 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
-import 'package:ehson/screen/chat/feeds_page.dart';
+import 'package:ehson/screen/chat/chats_page.dart';
+import 'package:ehson/screen/feed/feeds_page.dart';
 import 'package:ehson/screen/home/home_screen.dart';
 import 'package:ehson/screen/profile/profile.dart';
 import 'package:ehson/screen/wishlist/like.dart';
 import 'package:flutter/material.dart';
 
 import '../adjust_size.dart';
-import 'chat/comment.dart';
+import 'feed/comment.dart';
 
 class BottomBar extends StatefulWidget {
   const BottomBar({super.key});
@@ -24,7 +25,7 @@ class _BottomBarState extends State<BottomBar> {
     LikePage(),
     // AddProductScreen(),
     FeedsPage(),
-    Profile(),
+    ChatsPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -80,12 +81,12 @@ class _BottomBarState extends State<BottomBar> {
             color: Colors.white,
           ),
           Icon(
-            Icons.chat,
+            Icons.feed,
             size: IconSize.mediumIconSize(context),
             color: Colors.white,
           ),
           Icon(
-            Icons.person,
+            Icons.chat,
             size: IconSize.mediumIconSize(context),
             color: Colors.white,
           ),

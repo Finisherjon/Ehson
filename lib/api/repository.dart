@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:ehson/api/models/category_model.dart';
 import 'package:ehson/api/models/chat_model.dart';
+import 'package:ehson/api/models/chats_list_model.dart';
 import 'package:ehson/api/models/like_model.dart';
+import 'package:ehson/api/models/message_list_model.dart';
 import 'package:ehson/api/models/one_comment_model.dart';
 import 'package:ehson/api/models/one_feed_model.dart';
 import 'package:ehson/api/models/product_model.dart';
@@ -76,6 +78,48 @@ class EhsonRepository {
     } catch (e) {
       print("refresh_token->Server error $e");
       return false;
+    }
+  }
+
+  Future<ChatListModel> get_chats() async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    ChatListModel? chatListModel;
+    var url = Uri.parse(AppConstans.BASE_URL + "/getchats");
+    try {
+      var response = await http.get(url, headers: {
+        "Content-Type": "application/json",
+        "Authorization": 'Bearer $token',
+      });
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      print(resdata);
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          chatListModel = ChatListModel.fromJson(resdata);
+          return chatListModel;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          //agar token expired deb kesa tokenni yangila deganbiza
+          //tokenni yangilash funksiyasi
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await get_chats();
+          } else {
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("getData->Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print(("getData->Server error $e"));
+      throw Exception("getData->Server error $e");
     }
   }
 
@@ -428,6 +472,107 @@ class EhsonRepository {
     }
   }
 
+  Future<MessageListModel?> getmessages(int chat_id,String? next_page_url) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    MessageListModel? messageListModel;
+    if (token == '') {
+      print("Token yoq");
+      Map data = {
+        'email': prefs.getString('email'),
+        'password': prefs.getString('password')
+      };
+      var url = Uri.parse(AppConstans.BASE_URL + '/login');
+
+      //malumotlani jsonga moslashtirish
+      var body = json.encode(data);
+      try {
+        var response = await http.post(url,
+            headers: {"Content-Type": "application/json"}, body: body);
+        final resdata = json.decode(utf8.decode(response.bodyBytes));
+        print(resdata);
+        if (response.statusCode == 200) {
+          if (resdata['status']) {
+            int user_id =  resdata['user']['id'];
+            final SharedPreferences prefs = await _prefs;
+            prefs.setString('bearer_token', resdata['token']);
+            prefs.setInt('user_id', user_id);
+            return await getmessages(chat_id,next_page_url);
+          } else if (resdata['status'] == false &&
+              resdata['message'].toString().contains("Token expired")) {
+            bool token_isrefresh = await refresh_token(token);
+            if (token_isrefresh) {
+              return await getmessages(chat_id,next_page_url);
+            } else {
+              print("Server error code ${response.statusCode}");
+              throw Exception("Server error code ${response.statusCode}");
+            }
+          } else {
+            print(
+                "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+            throw Exception(
+                "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+          }
+        } else {
+          print("Server error code ${response.statusCode}");
+          throw Exception("Server error code ${response.statusCode}");
+        }
+      } catch (e) {
+        print("Server error $e");
+        throw Exception("Server error $e");
+      }
+    } else {
+      print("token bor");
+      var url;
+      if (next_page_url == null) {
+        return messageListModel;
+      } else if (next_page_url == '') {
+        //
+
+        url = Uri.parse(AppConstans.BASE_URL + "/getmessages");
+      } else {
+        url = Uri.parse(next_page_url);
+      }
+      final SharedPreferences prefs = await _prefs;
+      var token = prefs.getString('bearer_token') ?? '';
+      try {
+        Map data = {
+          'chat_id': chat_id
+        };
+        var body = json.encode(data);
+        var response = await http.post(url,
+              headers: {"Content-Type": "application/json","Authorization": 'Bearer $token'}, body: body);
+        final resdata = json.decode(utf8.decode(response.bodyBytes));
+        print(resdata);
+        if (response.statusCode == 200) {
+          if (resdata['status']) {
+            print(token);
+            messageListModel = MessageListModel.fromJson(resdata);
+            return messageListModel;
+          } else if (resdata['status'] == false &&
+              resdata['message'].toString().contains("Token expired")) {
+            bool token_isrefresh = await refresh_token(token);
+            if (token_isrefresh) {
+              return await getmessages(chat_id, next_page_url);
+            } else {
+              throw Exception("Server error code ${response.statusCode}");
+            }
+          } else {
+            throw Exception(
+                "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+          }
+        } else {
+          throw Exception("getData->Server error code ${response.statusCode}");
+        }
+      } catch (e) {
+        print(("getData->Server error $e"));
+        throw Exception("getData->Server error $e");
+      }
+    }
+  }
+
   Future<ProductModel?> getproduct(String? next_page_url, String date) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -451,8 +596,11 @@ class EhsonRepository {
         print(resdata);
         if (response.statusCode == 200) {
           if (resdata['status']) {
+            int user_id = resdata['user']['id'];
+            print(user_id);
             final SharedPreferences prefs = await _prefs;
             prefs.setString('bearer_token', resdata['token']);
+            prefs.setInt('user_id', user_id);
             return await getproduct(next_page_url, date);
           } else if (resdata['status'] == false &&
               resdata['message'].toString().contains("Token expired")) {
