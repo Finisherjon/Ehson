@@ -1,4 +1,4 @@
 class AppConstans {
-  static const String BASE_URL = 'https://tezkor-ofitsant.uz/api';
-  static const String BASE_URL2 = 'https://tezkor-ofitsant.uz/';
+  static const String BASE_URL = 'http://178.250.156.99:8081/api';
+  static const String BASE_URL2 = 'http://178.250.156.99:8081/';
 }

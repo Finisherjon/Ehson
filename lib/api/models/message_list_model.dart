@@ -112,9 +112,9 @@ class Data {
   String? createdAt;
   String? updatedAt;
   String? senderName;
-  Null? senderAvatar;
+  String? senderAvatar;
   String? receiverName;
-  Null? receiverAvatar;
+  String? receiverAvatar;
 
   Data(
       {this.id,

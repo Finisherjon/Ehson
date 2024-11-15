@@ -116,7 +116,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
         print(decodedJson['image_name']);
         return decodedJson['image_name'];
       } else {
-        print('Image upload failed.');
+        final respStr = await response.stream.bytesToString();
+        final decodedJson = jsonDecode(respStr);
+        print('Image upload failed.'+decodedJson.toString());
         return "Error";
       }
     }

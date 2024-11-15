@@ -5,7 +5,7 @@ class SocketService {
 
   // Initialize the connection and register the user ID
   void connectToSocket(String userId) {
-    socket = IO.io('ws://tezkor-ofitsant.uz:3000', <String, dynamic>{
+    socket = IO.io('ws://178.250.156.99:4000', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });
@@ -33,8 +33,9 @@ class SocketService {
   }
 
   // Function to send a message to a specific user ID
-  void sendMessage(String fromUserId, String toUserId, String message) {
+  void sendMessage(String chatId,String fromUserId, String toUserId, String message) {
     socket.emit('sendMessage', {
+      'chatId': chatId,
       'fromUserId': fromUserId,
       'toUserId': toUserId,
       'message': message

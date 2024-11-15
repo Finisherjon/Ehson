@@ -419,6 +419,55 @@ class EhsonRepository {
     }
   }
 
+  Future<String> create_my_chat(int user_one, int user_two) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    var uri = Uri.parse(AppConstans.BASE_URL + '/createchat');
+    Map data;
+    {
+      data = {
+        "user_one": user_one,
+        "user_two": user_two,
+      };
+    }
+
+    var body = json.encode(data);
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+      if (response.statusCode == 200) {
+        final resdata = json.decode(utf8.decode(response.bodyBytes));
+        if (resdata["status"] == true) {
+          return "Success";
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await create_my_chat(user_one,user_two);
+          } else {
+            return "Error: ${response.statusCode}";
+          }
+        } else {
+          return "Error: ${response.statusCode}";
+        }
+      } else {
+        return "Error: ${response.statusCode}";
+      }
+    } catch (e) {
+      print("Error: $e");
+      return "Exception: $e";
+    }
+  }
+
   Future<OneCommentModel?> add_commnet(int feed_id, String body_text) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();

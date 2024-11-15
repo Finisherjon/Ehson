@@ -4,11 +4,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ehson/adjust_size.dart';
 import 'package:ehson/bloc/add_product/add_product_bloc.dart';
 import 'package:ehson/bloc/homebloc/home_bloc.dart';
+import 'package:ehson/bloc/message/message_list_bloc.dart';
 import 'package:ehson/bloc/search_product/search_product_bloc.dart';
 import 'package:ehson/bloc/yordam_bloc/yordam_bloc.dart';
 import 'package:ehson/constants/constants.dart';
 import 'package:ehson/mywidgets/mywidgets.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
+import 'package:ehson/screen/chat/one_chat.dart';
 import 'package:ehson/screen/profile/profile.dart';
 import 'package:ehson/screen/yordam/yordam.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,6 +20,9 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import 'package:material_dialogs/dialogs.dart';
+import 'package:material_dialogs/shared/types.dart';
+import 'package:material_dialogs/widgets/buttons/icon_button.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -85,6 +90,30 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     BlocProvider.of<HomeBloc>(context).add(ReloadProductEvent(date: ""));
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> create_chat(int user_one,int user_two)async{
+    // String chat_create = await EhsonRepository().create_my_chat();
+    // if (chat_create.contains("Success")) {
+    //   Navigator.push(context,
+    //       MaterialPageRoute(
+    //           builder: (context) {
+    //             return BlocProvider(
+    //               create: (ctx) => MessageListBloc(),
+    //               child:  OneChatPage(chat_id: state.chatListModel.chats![index].chatId,name: name.toString(),avatar: avatar,my_id: user_id,another_id: another_id,),
+    //             );
+    //           }));
+    // } else {
+    //   Fluttertoast.showToast(
+    //       msg: "Serverda xatolik qayta urunib ko'ring!",
+    //       toastLength: Toast.LENGTH_SHORT,
+    //       gravity: ToastGravity.BOTTOM,
+    //       timeInSecForIosWeb: 1,
+    //       backgroundColor: Colors.red,
+    //       textColor: Colors.white,
+    //       fontSize: 16.0);
+    //
+    // }
   }
 
   //hulayam esdan chiqmasin
@@ -554,7 +583,52 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                               EdgeInsets.zero,
                                                                         ),
                                                                         onPressed:
-                                                                            () {},
+                                                                            () {
+                                                                              Dialogs.materialDialog(
+                                                                                  color: Colors.white,
+                                                                                  msg: "Chatni boshlashni xoxlaysizmi?",
+                                                                                  titleStyle: TextStyle(fontSize: 18),
+                                                                                  titleAlign: TextAlign.center,
+                                                                                  title: "Mehr",
+                                                                                  onClose: (a){
+
+                                                                                  },
+                                                                                  customView: Column(
+                                                                                    children: [
+                                                                                      // Padding(
+                                                                                      //   padding: const EdgeInsets.all(12.0),
+                                                                                      //   child: TextField(
+                                                                                      //     controller: txt,
+                                                                                      //     decoration:  InputDecoration(
+                                                                                      //         border:const OutlineInputBorder(),
+                                                                                      //         suffixIcon: GestureDetector(
+                                                                                      //             onTap: (){
+                                                                                      //               Clipboard.setData(ClipboardData(text: txt.text));
+                                                                                      //             },
+                                                                                      //             child: Icon(Icons.copy))
+                                                                                      //     ),
+                                                                                      //   ),
+                                                                                      // ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                                                                  context: context,
+                                                                                  actions: [
+                                                                                    TextButton(onPressed: (){
+                                                                                      Navigator.pop(context);
+                                                                                    }, child: Text("Orqaga qaytish")),
+                                                                                    IconsButton(
+                                                                                      onPressed: () async{
+                                                                                        // await create_chat(int user_one,int user_two);
+                                                                                      },
+                                                                                      text: 'Chatni boshlash',
+                                                                                      // iconData: Icons.done,
+                                                                                      color: Colors.blue,
+                                                                                      textStyle: TextStyle(color: Colors.white),
+                                                                                      iconColor: Colors.white,
+                                                                                    ),
+                                                                                  ]);
+                                                                            },
                                                                         icon:
                                                                             Icon(
                                                                           Icons

@@ -87,7 +87,7 @@ class _ProfileState extends State<Profile> {
             backgroundColor: Colors.blue,
             textColor: Colors.white,
             fontSize: 16.0);
-        Navigator.of(context).push(
+        Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => Profile()));
       } else {
         context.loaderOverlay.hide();
@@ -537,7 +537,7 @@ class _ProfileState extends State<Profile> {
                                       ),
                                       onPressed: _validateFields,
                                       child: Text(
-                                        "Save",
+                                        "Saqlash",
                                         style: TextStyle(color: Colors.white),
                                       ),
                                     ),

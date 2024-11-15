@@ -6,7 +6,10 @@ import 'package:ehson/mywidgets/mywidgets.dart';
 import 'package:ehson/screen/service/socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+
+import '../../api/models/message_list_model.dart';
 
 class OneChatPage extends StatefulWidget {
   final int? chat_id;
@@ -29,12 +32,26 @@ class _OneChatPageState extends State<OneChatPage> {
   Timer? _debounce;
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
+      socketService.sendMessage(widget.chat_id.toString(), widget.my_id.toString(), widget.another_id.toString(), _controller.text.toString());
+      DateTime now = new DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
+      final new_msg = new Data(
+          chatId: widget.chat_id,
+          message:_controller.text.toString(),
+          senderId: widget.my_id,
+          receiverId: widget.another_id,
+          createdAt: formattedDate
+      );
       setState(() {
-        messages.insert(
-          0,
-          Message(text: _controller.text, isMe: true, time: "10:10 "),
-        );
+        mes.insert(0,new_msg);
       });
+      // setState(() {
+      //   messages.insert(
+      //     0,
+      //     Message(text: _controller.text, isMe: true, time: "10:10 "),
+      //   );
+      // });
       _controller.clear();
     }
   }
@@ -44,7 +61,25 @@ class _OneChatPageState extends State<OneChatPage> {
 
     // Listen for messages and add them to the list
     socketService.socket.on('receiveMessage', (data) {
-      print(data);
+      String chatId = data['chatId'];
+      if(chatId.contains(widget.chat_id.toString())){
+        String fromUserId = data['fromUserId'];
+        String toUserId = data['toUserId'];
+        String message = data['message'];
+        DateTime now = new DateTime.now();
+        String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+        final new_msg = new Data(
+          chatId: widget.chat_id,
+          message:message.toString(),
+          senderId: int.parse(fromUserId),
+          receiverId: int.parse(toUserId),
+          createdAt: formattedDate
+        );
+        setState(() {
+          mes.insert(0,new_msg);
+        });
+
+      }
       // setState(() {
       //   String fromPhoneNumber = data['fromPhoneNumber'];
       //   String message = data['message'];
@@ -62,12 +97,17 @@ class _OneChatPageState extends State<OneChatPage> {
     _scrollController.addListener(_onScroll);
   }
 
+  Future<void> _closeSocket() async {
+    socketService.socket.close();
+  }
+
   @override
   void dispose() {
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
     _debounce?.cancel();
+    _closeSocket();
     super.dispose();
   }
 
@@ -102,6 +142,8 @@ class _OneChatPageState extends State<OneChatPage> {
       }
     });
   }
+
+  List<Data> mes = [];
 
   @override
   Widget build(BuildContext context) {
@@ -143,13 +185,14 @@ class _OneChatPageState extends State<OneChatPage> {
           builder: (context, state) {
             switch(state.status){
               case MessageList.success:
-                if(state.messages.isEmpty){
-                  return Container(
-                    child: MyWidget().mywidget("Chat bo'sh"),
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.86,
-                  );
-                }
+                // if(state.messages.isEmpty){
+                //   return Container(
+                //     child: MyWidget().mywidget("Chat bo'sh"),
+                //     width: MediaQuery.of(context).size.width,
+                //     height: MediaQuery.of(context).size.height * 0.86,
+                //   );
+                // }
+                mes.addAll(state.messages);
                 return SafeArea(
                   child: Column(
                     children: <Widget>[
@@ -157,12 +200,12 @@ class _OneChatPageState extends State<OneChatPage> {
                         child: ListView.builder(
                           controller: _scrollController,
                           reverse: true,
-                          itemCount: state.messages.length,
+                          itemCount: mes.length,
                           itemBuilder: (context, index) {
                             return ChatBubble(
-                              text: state.messages[index].message.toString(),
-                              isMe: state.messages[index].senderId == widget.my_id,
-                              time: state.messages[index].createdAt.toString(),
+                              text: mes[index].message.toString(),
+                              isMe: mes[index].senderId == widget.my_id,
+                              time: mes[index].createdAt.toString(),
                             );
                           },
                         ),

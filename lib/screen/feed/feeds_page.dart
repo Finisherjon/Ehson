@@ -133,7 +133,7 @@ class _FeedsPageState extends State<FeedsPage> {
           //   ),
           // ],
           centerTitle: true,
-          title: Text("Chat"),
+          title: Text("Mavzu"),
         ),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
