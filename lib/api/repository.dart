@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ehson/api/models/category_model.dart';
 import 'package:ehson/api/models/chat_model.dart';
 import 'package:ehson/api/models/chats_list_model.dart';
+import 'package:ehson/api/models/create_chat_model.dart';
 import 'package:ehson/api/models/like_model.dart';
 import 'package:ehson/api/models/message_list_model.dart';
 import 'package:ehson/api/models/one_comment_model.dart';
@@ -419,11 +420,13 @@ class EhsonRepository {
     }
   }
 
-  Future<String> create_my_chat(int user_one, int user_two) async {
+  Future<CreateChatModel?> create_my_chat(int user_one, int user_two) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     final SharedPreferences prefs = await _prefs;
     token = prefs.getString('bearer_token') ?? '';
+    CreateChatModel? createChatModel;
+
     var uri = Uri.parse(AppConstans.BASE_URL + '/createchat');
     Map data;
     {
@@ -447,24 +450,29 @@ class EhsonRepository {
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata["status"] == true) {
-          return "Success";
+          createChatModel = CreateChatModel.fromJson(resdata);
+          return createChatModel;
         } else if (resdata['status'] == false &&
             resdata['message'].toString().contains("Token expired")) {
           bool token_isrefresh = await refresh_token(token);
           if (token_isrefresh) {
             return await create_my_chat(user_one,user_two);
           } else {
-            return "Error: ${response.statusCode}";
+            print("Server error code ${response.statusCode}");
+            throw Exception("Server error code ${response.statusCode}");
           }
         } else {
-          return "Error: ${response.statusCode}";
+          print(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
         }
       } else {
-        return "Error: ${response.statusCode}";
+        throw Exception("Server error ${response.statusCode}");
       }
     } catch (e) {
       print("Error: $e");
-      return "Exception: $e";
+      throw Exception("Server error $e");
     }
   }
 

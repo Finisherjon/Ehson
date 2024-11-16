@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ehson/adjust_size.dart';
+import 'package:ehson/api/models/create_chat_model.dart';
 import 'package:ehson/bloc/add_product/add_product_bloc.dart';
 import 'package:ehson/bloc/homebloc/home_bloc.dart';
 import 'package:ehson/bloc/message/message_list_bloc.dart';
@@ -61,6 +62,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  int user_id = 0;
+
+  Future<void> getSharedPrefs() async {
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
+    final SharedPreferences prefs = await _prefs;
+    user_id = prefs.getInt("user_id") ?? 0;
+  }
+
   //shera norm qilib chiqor mahsulotlani ui taxla olxdanam dizayn ol manam tashagandan ol rasmla borediku ui qilivur image bilan productni qushadigani qilamiz
   Future<bool> add_like_product(int? product_id) async {
     String add_like = await EhsonRepository().add_like(product_id);
@@ -88,32 +98,39 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getSharedPrefs();
     BlocProvider.of<HomeBloc>(context).add(ReloadProductEvent(date: ""));
     _scrollController.addListener(_onScroll);
   }
 
   Future<void> create_chat(int user_one,int user_two)async{
-    // String chat_create = await EhsonRepository().create_my_chat();
-    // if (chat_create.contains("Success")) {
-    //   Navigator.push(context,
-    //       MaterialPageRoute(
-    //           builder: (context) {
-    //             return BlocProvider(
-    //               create: (ctx) => MessageListBloc(),
-    //               child:  OneChatPage(chat_id: state.chatListModel.chats![index].chatId,name: name.toString(),avatar: avatar,my_id: user_id,another_id: another_id,),
-    //             );
-    //           }));
-    // } else {
-    //   Fluttertoast.showToast(
-    //       msg: "Serverda xatolik qayta urunib ko'ring!",
-    //       toastLength: Toast.LENGTH_SHORT,
-    //       gravity: ToastGravity.BOTTOM,
-    //       timeInSecForIosWeb: 1,
-    //       backgroundColor: Colors.red,
-    //       textColor: Colors.white,
-    //       fontSize: 16.0);
-    //
-    // }
+    context.loaderOverlay.show();
+    CreateChatModel? createChatModel = await EhsonRepository().create_my_chat(user_one,user_two);
+    if(createChatModel!=null){
+      String name = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoName.toString() : createChatModel.chat!.userOneName.toString();
+      String avatar = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoAvatar.toString() : createChatModel.chat!.userOneAvatar.toString();
+      int? another_id = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoId : createChatModel.chat!.userOneId;
+        Navigator.push(context,
+            MaterialPageRoute(
+                builder: (context) {
+                  return BlocProvider(
+                    create: (ctx) => MessageListBloc(),
+                    child:  OneChatPage(chat_id: createChatModel.chat!.chatId,name: name.toString(),avatar: avatar,my_id: user_id,another_id: another_id ?? 0,),
+                  );
+                }));
+      } else {
+        Fluttertoast.showToast(
+            msg: "Serverda xatolik qayta urunib ko'ring!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+
+      }
+    context.loaderOverlay.hide();
+
   }
 
   //hulayam esdan chiqmasin
@@ -348,397 +365,400 @@ class _HomeScreenState extends State<HomeScreen> {
                               height: MediaQuery.of(context).size.height * 0.86,
                             );
                           }
-                          return Container(
-                            height: MediaQuery.of(context).size.height * 0.707,
-                            child: SmartRefresher(
-                              child: MasonryGridView.count(
-                                  controller: _scrollController,
-                                  physics: BouncingScrollPhysics(),
-                                  padding: EdgeInsets.symmetric(vertical: 10),
-                                  crossAxisSpacing: 15,
-                                  crossAxisCount: 2,
-                                  itemCount: state.islast
-                                      ? state.products.length
-                                      : state.products.length + 2,
-                                  scrollDirection: Axis.vertical,
-                                  mainAxisSpacing: 10,
-                                  itemBuilder: (BuildContext context, index) {
-                                    if (index >= state.products.length) {
-                                      return Center(
-                                          child: CircularProgressIndicator());
-                                    }
-                                    //telefonchani bosa endi telefon raqam bod api bilan kelopti
-                                    //bulimi? ha zabanca
-                                    String? asosiy_img;
-                                    if (state.products.length > index) {
-                                      if (state.products[index].img1 != null) {
-                                        asosiy_img = state.products[index].img1;
-                                      } else if (state.products[index].img2 !=
-                                          null) {
-                                        asosiy_img = state.products[index].img2;
-                                      } else if (state.products[index].img3 !=
-                                          null) {
-                                        asosiy_img = state.products[index].img3;
-                                      } else {
-                                        asosiy_img = null;
+                          return LoaderOverlay(
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.707,
+                              child: SmartRefresher(
+                                child: MasonryGridView.count(
+                                    controller: _scrollController,
+                                    physics: BouncingScrollPhysics(),
+                                    padding: EdgeInsets.symmetric(vertical: 10),
+                                    crossAxisSpacing: 15,
+                                    crossAxisCount: 2,
+                                    itemCount: state.islast
+                                        ? state.products.length
+                                        : state.products.length + 2,
+                                    scrollDirection: Axis.vertical,
+                                    mainAxisSpacing: 10,
+                                    itemBuilder: (BuildContext context, index) {
+                                      if (index >= state.products.length) {
+                                        return Center(
+                                            child: CircularProgressIndicator());
                                       }
-                                    }
-                                    return index >= state.products.length
-                                        ? Center(
-                                            child: CircularProgressIndicator(),
-                                          )
-                                        : Container(
-                                            child: Stack(
-                                              children: [
-                                                InkWell(
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
-                                                  child: Container(
-                                                    padding: EdgeInsets.only(
-                                                        bottom: 10),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              25),
-                                                      color: Colors.white,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.black
-                                                              .withOpacity(0.1),
-                                                          blurRadius: 5,
-                                                          spreadRadius: 1,
-                                                          offset:
-                                                              const Offset(1, 1),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(25),
-                                                          child: Stack(
-                                                            children: [
-                                                              asosiy_img ==
-                                                                          null &&
-                                                                      state.products
-                                                                              .length >
-                                                                          index
-                                                                  ? CachedNetworkImage(
-                                                          imageUrl:AppConstans.BASE_URL2 + "images/defrasm.png",
-                                                            placeholder: (context, url) => Container(
-                                                                width: MediaQuery.of(context).size.width*0.5,
-                                                                height:MediaQuery.of(context).size.height*0.2,
-                                                                child: Row(
-                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                  children: [
-                                                                    CircularProgressIndicator(),
-                                                                  ],
-                                                                )
-                                                            ),
-                                                            errorWidget: (context, url, error) =>
-                                                                Container(
-                                                                    width: MediaQuery.of(context).size.width*0.5,
-                                                                    height:MediaQuery.of(context).size.height*0.2,
-                                                                    child: Icon(Icons.error)
-                                                                ),
-                                                          )
-                                                              :CachedNetworkImage(
-                                                                imageUrl:AppConstans.BASE_URL2 + "images/" + asosiy_img!,
-                                                                placeholder: (context, url) => Container(
-                                                                    width: MediaQuery.of(context).size.width*0.5,
-                                                                    height:MediaQuery.of(context).size.height*0.2,
-                                                                    child: Row(
-                                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                                      children: [
-                                                                        CircularProgressIndicator(),
-                                                                      ],
-                                                                    )
-                                                                ),
-                                                                errorWidget: (context, url, error) =>
-                                                                    Container(
-                                                                        width: MediaQuery.of(context).size.width*0.5,
-                                                                        height:MediaQuery.of(context).size.height*0.2,
-                                                                        child: Icon(Icons.error)
-                                                                    ),
+                                      //telefonchani bosa endi telefon raqam bod api bilan kelopti
+                                      //bulimi? ha zabanca
+                                      String? asosiy_img;
+                                      if (state.products.length > index) {
+                                        if (state.products[index].img1 != null) {
+                                          asosiy_img = state.products[index].img1;
+                                        } else if (state.products[index].img2 !=
+                                            null) {
+                                          asosiy_img = state.products[index].img2;
+                                        } else if (state.products[index].img3 !=
+                                            null) {
+                                          asosiy_img = state.products[index].img3;
+                                        } else {
+                                          asosiy_img = null;
+                                        }
+                                      }
+                                      return index >= state.products.length
+                                          ? Center(
+                                              child: CircularProgressIndicator(),
+                                            )
+                                          : Container(
+                                              child: Stack(
+                                                children: [
+                                                  InkWell(
+                                                    borderRadius:
+                                                        BorderRadius.circular(30),
+                                                    child: Container(
+                                                      padding: EdgeInsets.only(
+                                                          bottom: 10),
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                25),
+                                                        color: Colors.white,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.black
+                                                                .withOpacity(0.1),
+                                                            blurRadius: 5,
+                                                            spreadRadius: 1,
+                                                            offset:
+                                                                const Offset(1, 1),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(25),
+                                                            child: Stack(
+                                                              children: [
+                                                                asosiy_img ==
+                                                                            null &&
+                                                                        state.products
+                                                                                .length >
+                                                                            index
+                                                                    ? CachedNetworkImage(
+                                                            imageUrl:AppConstans.BASE_URL2 + "images/defrasm.png",
+                                                              placeholder: (context, url) => Container(
+                                                                  width: MediaQuery.of(context).size.width*0.5,
+                                                                  height:MediaQuery.of(context).size.height*0.2,
+                                                                  child: Row(
+                                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                                    children: [
+                                                                      CircularProgressIndicator(),
+                                                                    ],
+                                                                  )
                                                               ),
-                                                              Positioned(
-                                                                right: 10,
-                                                                top: 10,
-                                                                child: Container(
-                                                                  height: Sizes
-                                                                          .heights(
-                                                                              context) *
-                                                                      0.04,
-                                                                  width: Sizes.widths(
-                                                                          context) *
-                                                                      0.07,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    shape: BoxShape
-                                                                        .circle,
+                                                              errorWidget: (context, url, error) =>
+                                                                  Container(
+                                                                      width: MediaQuery.of(context).size.width*0.5,
+                                                                      height:MediaQuery.of(context).size.height*0.2,
+                                                                      child: Icon(Icons.error)
                                                                   ),
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child:
-                                                                      IconButton(
-                                                                    style: IconButton
-                                                                        .styleFrom(
-                                                                      minimumSize:
-                                                                          Size.zero,
-                                                                      padding:
-                                                                          EdgeInsets
-                                                                              .zero,
+                                                            )
+                                                                :CachedNetworkImage(
+                                                                  imageUrl:AppConstans.BASE_URL2 + "images/" + asosiy_img!,
+                                                                  placeholder: (context, url) => Container(
+                                                                      width: MediaQuery.of(context).size.width*0.5,
+                                                                      height:MediaQuery.of(context).size.height*0.2,
+                                                                      child: Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                                        children: [
+                                                                          CircularProgressIndicator(),
+                                                                        ],
+                                                                      )
+                                                                  ),
+                                                                  errorWidget: (context, url, error) =>
+                                                                      Container(
+                                                                          width: MediaQuery.of(context).size.width*0.5,
+                                                                          height:MediaQuery.of(context).size.height*0.2,
+                                                                          child: Icon(Icons.error)
+                                                                      ),
+                                                                ),
+                                                                Positioned(
+                                                                  right: 10,
+                                                                  top: 10,
+                                                                  child: Container(
+                                                                    height: Sizes
+                                                                            .heights(
+                                                                                context) *
+                                                                        0.04,
+                                                                    width: Sizes.widths(
+                                                                            context) *
+                                                                        0.07,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: Colors
+                                                                          .white,
+                                                                      shape: BoxShape
+                                                                          .circle,
                                                                     ),
-                                                                    onPressed:
-                                                                        () async {
-                                                                          context.loaderOverlay.show();
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    child:
+                                                                        IconButton(
+                                                                      style: IconButton
+                                                                          .styleFrom(
+                                                                        minimumSize:
+                                                                            Size.zero,
+                                                                        padding:
+                                                                            EdgeInsets
+                                                                                .zero,
+                                                                      ),
+                                                                      onPressed:
+                                                                          () async {
+                                                                            context.loaderOverlay.show();
 
-                                                                          int? product_id = state
-                                                                          .products[
-                                                                              index]
-                                                                          .id;
-                                                                      bool
-                                                                          add_like =
-                                                                          await add_like_product(
-                                                                              product_id);
-
-                                                                      if (add_like) {
-                                                                        state
+                                                                            int? product_id = state
                                                                             .products[
                                                                                 index]
-                                                                            .isliked = state.products[index].isliked ==
-                                                                                0
-                                                                            ? 1
-                                                                            : 0;
-                                                                      }
-                                                                      //shuni taxla
-                                                                      // state.products[index].phone
-                                                                      //qara statega phoneyam kelopti telefonchani bossa telefon qilishga utsin nomer terib shunoqa package bor
+                                                                            .id;
+                                                                        bool
+                                                                            add_like =
+                                                                            await add_like_product(
+                                                                                product_id);
 
-                                                                      //kurdinmi jura ha
+                                                                        if (add_like) {
+                                                                          state
+                                                                              .products[
+                                                                                  index]
+                                                                              .isliked = state.products[index].isliked ==
+                                                                                  0
+                                                                              ? 1
+                                                                              : 0;
+                                                                        }
+                                                                        //shuni taxla
+                                                                        // state.products[index].phone
+                                                                        //qara statega phoneyam kelopti telefonchani bossa telefon qilishga utsin nomer terib shunoqa package bor
 
-                                                                      //san chatga utgan payt awibka chiqopti ui bilan manimca uwani tugirla man apini update qilay getproductni xay
+                                                                        //kurdinmi jura ha
 
-                                                                      //hozir like quwish post buli faqat ui bilan integratsiya qilish kerak
-                                                                      setState(
-                                                                          () {
-                                                                        _heartIcon =
-                                                                            !_heartIcon;
-                                                                      });
-                                                                          context.loaderOverlay.hide();
+                                                                        //san chatga utgan payt awibka chiqopti ui bilan manimca uwani tugirla man apini update qilay getproductni xay
 
-                                                                        },
-                                                                    //productlani oladigan api borku uwani uzgartiramiz man usha productga like bosganmi yoqmi ushaniyam beraman keyen usha bilan aniqlaymiz
-                                                                    icon: Icon(
-                                                                      state.products[index].isliked ==
-                                                                              1
-                                                                          ? Icons
-                                                                              .favorite
-                                                                          : Icons
-                                                                              .favorite_border,
-                                                                      color: Colors
-                                                                          .red,
-                                                                      size: 20,
+                                                                        //hozir like quwish post buli faqat ui bilan integratsiya qilish kerak
+                                                                        setState(
+                                                                            () {
+                                                                          _heartIcon =
+                                                                              !_heartIcon;
+                                                                        });
+                                                                            context.loaderOverlay.hide();
+
+                                                                          },
+                                                                      //productlani oladigan api borku uwani uzgartiramiz man usha productga like bosganmi yoqmi ushaniyam beraman keyen usha bilan aniqlaymiz
+                                                                      icon: Icon(
+                                                                        state.products[index].isliked ==
+                                                                                1
+                                                                            ? Icons
+                                                                                .favorite
+                                                                            : Icons
+                                                                                .favorite_border,
+                                                                        color: Colors
+                                                                            .red,
+                                                                        size: 20,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ),
-                                                              ),
-                                                              Positioned(
-                                                                right: 10,
-                                                                bottom: 10,
-                                                                child: Column(
-                                                                  children: [
-                                                                    Container(
-                                                                      height: Sizes.heights(
-                                                                              context) *
-                                                                          0.037,
-                                                                      width: Sizes.widths(
-                                                                              context) *
-                                                                          0.077,
-                                                                      decoration:
-                                                                          BoxDecoration(
-                                                                        color: Colors
-                                                                            .white,
-                                                                        shape: BoxShape
-                                                                            .circle,
-                                                                      ),
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .center,
-                                                                      child:
-                                                                          IconButton(
-                                                                        style: IconButton
-                                                                            .styleFrom(
-                                                                          minimumSize:
-                                                                              Size.zero,
-                                                                          padding:
-                                                                              EdgeInsets.zero,
+                                                                Positioned(
+                                                                  right: 10,
+                                                                  bottom: 10,
+                                                                  child: Column(
+                                                                    children: [
+                                                                      Container(
+                                                                        height: Sizes.heights(
+                                                                                context) *
+                                                                            0.037,
+                                                                        width: Sizes.widths(
+                                                                                context) *
+                                                                            0.077,
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color: Colors
+                                                                              .white,
+                                                                          shape: BoxShape
+                                                                              .circle,
                                                                         ),
-                                                                        onPressed:
-                                                                            () {
-                                                                              Dialogs.materialDialog(
-                                                                                  color: Colors.white,
-                                                                                  msg: "Chatni boshlashni xoxlaysizmi?",
-                                                                                  titleStyle: TextStyle(fontSize: 18),
-                                                                                  titleAlign: TextAlign.center,
-                                                                                  title: "Mehr",
-                                                                                  onClose: (a){
+                                                                        alignment:
+                                                                            Alignment
+                                                                                .center,
+                                                                        child:
+                                                                            IconButton(
+                                                                          style: IconButton
+                                                                              .styleFrom(
+                                                                            minimumSize:
+                                                                                Size.zero,
+                                                                            padding:
+                                                                                EdgeInsets.zero,
+                                                                          ),
+                                                                          onPressed:
+                                                                              () {
+                                                                                Dialogs.materialDialog(
+                                                                                    color: Colors.white,
+                                                                                    msg: "Chatni boshlashni xoxlaysizmi?",
+                                                                                    titleStyle: TextStyle(fontSize: 18),
+                                                                                    titleAlign: TextAlign.center,
+                                                                                    title: "Mehr",
+                                                                                    onClose: (a){
 
-                                                                                  },
-                                                                                  customView: Column(
-                                                                                    children: [
-                                                                                      // Padding(
-                                                                                      //   padding: const EdgeInsets.all(12.0),
-                                                                                      //   child: TextField(
-                                                                                      //     controller: txt,
-                                                                                      //     decoration:  InputDecoration(
-                                                                                      //         border:const OutlineInputBorder(),
-                                                                                      //         suffixIcon: GestureDetector(
-                                                                                      //             onTap: (){
-                                                                                      //               Clipboard.setData(ClipboardData(text: txt.text));
-                                                                                      //             },
-                                                                                      //             child: Icon(Icons.copy))
-                                                                                      //     ),
-                                                                                      //   ),
-                                                                                      // ),
-                                                                                    ],
-                                                                                  ),
-                                                                                  customViewPosition: CustomViewPosition.BEFORE_ACTION,
-                                                                                  context: context,
-                                                                                  actions: [
-                                                                                    TextButton(onPressed: (){
-                                                                                      Navigator.pop(context);
-                                                                                    }, child: Text("Orqaga qaytish")),
-                                                                                    IconsButton(
-                                                                                      onPressed: () async{
-                                                                                        // await create_chat(int user_one,int user_two);
-                                                                                      },
-                                                                                      text: 'Chatni boshlash',
-                                                                                      // iconData: Icons.done,
-                                                                                      color: Colors.blue,
-                                                                                      textStyle: TextStyle(color: Colors.white),
-                                                                                      iconColor: Colors.white,
+                                                                                    },
+                                                                                    customView: Column(
+                                                                                      children: [
+                                                                                        // Padding(
+                                                                                        //   padding: const EdgeInsets.all(12.0),
+                                                                                        //   child: TextField(
+                                                                                        //     controller: txt,
+                                                                                        //     decoration:  InputDecoration(
+                                                                                        //         border:const OutlineInputBorder(),
+                                                                                        //         suffixIcon: GestureDetector(
+                                                                                        //             onTap: (){
+                                                                                        //               Clipboard.setData(ClipboardData(text: txt.text));
+                                                                                        //             },
+                                                                                        //             child: Icon(Icons.copy))
+                                                                                        //     ),
+                                                                                        //   ),
+                                                                                        // ),
+                                                                                      ],
                                                                                     ),
-                                                                                  ]);
-                                                                            },
-                                                                        icon:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .chat,
+                                                                                    customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                                                                    context: context,
+                                                                                    actions: [
+                                                                                      TextButton(onPressed: (){
+                                                                                        Navigator.pop(context);
+                                                                                      }, child: Text("Orqaga qaytish")),
+                                                                                      IconsButton(
+                                                                                        onPressed: () async{
+                                                                                          Navigator.pop(context);
+                                                                                          await create_chat(user_id,state.products[index].userId ?? 0);
+                                                                                        },
+                                                                                        text: 'Chatni boshlash',
+                                                                                        // iconData: Icons.done,
+                                                                                        color: Colors.blue,
+                                                                                        textStyle: TextStyle(color: Colors.white),
+                                                                                        iconColor: Colors.white,
+                                                                                      ),
+                                                                                    ]);
+                                                                              },
+                                                                          icon:
+                                                                              Icon(
+                                                                            Icons
+                                                                                .chat,
+                                                                            color: Colors
+                                                                                .blue,
+                                                                            size: IconSize.smallIconSize(
+                                                                                context),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      SizedBox(
+                                                                          height:
+                                                                              8),
+                                                                      Container(
+                                                                        height: Sizes.heights(
+                                                                                context) *
+                                                                            0.04,
+                                                                        width: Sizes.widths(
+                                                                                context) *
+                                                                            0.08,
+                                                                        decoration:
+                                                                            BoxDecoration(
                                                                           color: Colors
-                                                                              .blue,
-                                                                          size: IconSize.smallIconSize(
-                                                                              context),
+                                                                              .white,
+                                                                          shape: BoxShape
+                                                                              .circle,
                                                                         ),
-                                                                      ),
-                                                                    ),
-                                                                    SizedBox(
-                                                                        height:
-                                                                            8),
-                                                                    Container(
-                                                                      height: Sizes.heights(
-                                                                              context) *
-                                                                          0.04,
-                                                                      width: Sizes.widths(
-                                                                              context) *
-                                                                          0.08,
-                                                                      decoration:
-                                                                          BoxDecoration(
-                                                                        color: Colors
-                                                                            .white,
-                                                                        shape: BoxShape
-                                                                            .circle,
-                                                                      ),
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .center,
-                                                                      child:
-                                                                          IconButton(
-                                                                        style: IconButton
-                                                                            .styleFrom(
-                                                                          minimumSize:
-                                                                              Size.zero,
-                                                                          padding:
-                                                                              EdgeInsets.zero,
-                                                                        ),
-                                                                        onPressed:state
-                                                                            .products[index]
-                                                                            .phone != null?
-                                                                            () {
-                                                                          makePhoneCall(state
+                                                                        alignment:
+                                                                            Alignment
+                                                                                .center,
+                                                                        child:
+                                                                            IconButton(
+                                                                          style: IconButton
+                                                                              .styleFrom(
+                                                                            minimumSize:
+                                                                                Size.zero,
+                                                                            padding:
+                                                                                EdgeInsets.zero,
+                                                                          ),
+                                                                          onPressed:state
                                                                               .products[index]
-                                                                              .phone!);
-                                                                        } :null,
-                                                                        icon:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .phone,
-                                                                          color: Colors
-                                                                              .green,
-                                                                          size: IconSize.smallIconSize(
-                                                                              context),
+                                                                              .phone != null?
+                                                                              () {
+                                                                            makePhoneCall(state
+                                                                                .products[index]
+                                                                                .phone!);
+                                                                          } :null,
+                                                                          icon:
+                                                                              Icon(
+                                                                            Icons
+                                                                                .phone,
+                                                                            color: Colors
+                                                                                .green,
+                                                                            size: IconSize.smallIconSize(
+                                                                                context),
+                                                                          ),
                                                                         ),
                                                                       ),
-                                                                    ),
-                                                                  ],
+                                                                    ],
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            ],
+                                                              ],
+                                                            ),
                                                           ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsets.only(
-                                                                  left: 8,
-                                                                  right: 8,
-                                                                  top: 8),
-                                                          child: Text(
-                                                            state.products[index]
-                                                                .title!,
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                            maxLines: 1,
-                                                            overflow: TextOverflow
-                                                                .ellipsis,
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                                    left: 8,
+                                                                    right: 8,
+                                                                    top: 8),
+                                                            child: Text(
+                                                              state.products[index]
+                                                                  .title!,
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow
+                                                                  .ellipsis,
+                                                            ),
                                                           ),
-                                                        ),
-                                                         Padding(
-                                                          padding:
-                                                              EdgeInsets.only(
-                                                                  left: 8,
-                                                                  right: 8,
-                                                                  top: 8),
-                                                          child: Text(state.products[index].info.toString(),
-                                                            maxLines: 1,
-                                                            overflow: TextOverflow.ellipsis,
+                                                           Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                                    left: 8,
+                                                                    right: 8,
+                                                                    top: 8),
+                                                            child: Text(state.products[index].info.toString(),
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ],
+                                                        ],
+                                                      ),
                                                     ),
+                                                    onTap: () {
+                                                      // Navigator.of(context).push(
+                                                      //     MaterialPageRoute(
+                                                      //         builder: (context) =>
+                                                      //             ProductInfo()));
+                                                    },
                                                   ),
-                                                  onTap: () {
-                                                    // Navigator.of(context).push(
-                                                    //     MaterialPageRoute(
-                                                    //         builder: (context) =>
-                                                    //             ProductInfo()));
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                  }),
-                              controller: _refreshController,
-                              onRefresh: _onrefresh,
+                                                ],
+                                              ),
+                                            );
+                                    }),
+                                controller: _refreshController,
+                                onRefresh: _onrefresh,
+                              ),
                             ),
                           );
                         //   GridView.builder(
