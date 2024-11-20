@@ -213,17 +213,16 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     //bitta smartrefresher qoyamiz
-    return SafeArea(
-      child: LoaderOverlay(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Profile"),
+        centerTitle: true,
+      ),
+      body: LoaderOverlay(
         child: SmartRefresher(
           controller: _refreshController,
           onRefresh: _onrefresh,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text("Profile"),
-              centerTitle: true,
-            ),
-            body: server_error
+          child: server_error
                 ? Container(
               child: MyWidget().mywidget("Serverda xatolik!"),
               width: MediaQuery.of(context).size.width,
@@ -252,7 +251,7 @@ class _ProfileState extends State<Profile> {
                                       child: Container(
                                         decoration: BoxDecoration(
                                           border:
-                                              Border.all(color: Colors.black),
+                                              Border.all(color: Colors.blue),
                                           borderRadius:
                                               BorderRadius.circular(50),
                                         ),
@@ -271,7 +270,7 @@ class _ProfileState extends State<Profile> {
                                         :
                                         userModel!.user!.avatar == "" || userModel!.user!.avatar == null
                                             ? Icon(Icons.person,
-                                            size: 50, color: Colors.grey)
+                                            size: 60, color: Colors.blue)
                                             :
                                         Image.network(
                                           AppConstans
@@ -324,7 +323,7 @@ class _ProfileState extends State<Profile> {
                                 ),
                               ),
                               Text(
-                                "Phone: " + userModel!.user!.phone.toString(),
+                                  userModel!.user!.phone != null ? "Phone: " + userModel!.user!.phone.toString() : "Phone: - ",
                                 style: GoogleFonts.roboto(
                                   textStyle: TextStyle(
                                       fontSize: 20,
@@ -551,7 +550,7 @@ class _ProfileState extends State<Profile> {
                           ),
                         ),
                       ),
-          ),
+
         ),
       ),
     );

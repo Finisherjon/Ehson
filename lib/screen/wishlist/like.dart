@@ -1,13 +1,22 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ehson/api/models/create_chat_model.dart';
 import 'package:ehson/bloc/get_like/get_like_bloc.dart';
+import 'package:ehson/bloc/get_one_product/get_one_product_bloc.dart';
+import 'package:ehson/bloc/message/message_list_bloc.dart';
+import 'package:ehson/screen/chat/one_chat.dart';
+import 'package:ehson/screen/product_info/product_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import 'package:material_dialogs/dialogs.dart';
+import 'package:material_dialogs/shared/types.dart';
+import 'package:material_dialogs/widgets/buttons/icon_button.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/models/get_like_model.dart';
@@ -32,10 +41,52 @@ class _LikePageState extends State<LikePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getSharedPrefs();
     BlocProvider.of<GetLikeBloc>(context).add(ReloadLikeEvent(date: ""));
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
   }
+
+  int user_id = 0;
+
+  Future<void> getSharedPrefs() async {
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
+    final SharedPreferences prefs = await _prefs;
+    user_id = prefs.getInt("user_id") ?? 0;
+  }
+
+  Future<void> create_chat(int user_one,int user_two)async{
+    context.loaderOverlay.show();
+
+    CreateChatModel? createChatModel = await EhsonRepository().create_my_chat(user_one,user_two);
+    if(createChatModel!=null){
+      String name = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoName.toString() : createChatModel.chat!.userOneName.toString();
+      String avatar = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoAvatar.toString() : createChatModel.chat!.userOneAvatar.toString();
+      int? another_id = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoId : createChatModel.chat!.userOneId;
+      Navigator.push(context,
+          MaterialPageRoute(
+              builder: (context) {
+                return BlocProvider(
+                  create: (ctx) => MessageListBloc(),
+                  child:  OneChatPage(chat_id: createChatModel.chat!.chatId,name: name.toString(),avatar: avatar,my_id: user_id,another_id: another_id ?? 0,),
+                );
+              }));
+    } else {
+      Fluttertoast.showToast(
+          msg: "Serverda xatolik qayta urunib ko'ring!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+    }
+    context.loaderOverlay.show();
+
+  }
+
 
   void dispose() {
     _scrollController
@@ -215,25 +266,7 @@ class _LikePageState extends State<LikePage> {
                                                                   state.products
                                                                       .length >
                                                                       index
-                                                                  ? CachedNetworkImage(
-                                                                imageUrl:AppConstans.BASE_URL2 + "images/defrasm.png",
-                                                                placeholder: (context, url) => Container(
-                                                                    width: MediaQuery.of(context).size.width*0.5,
-                                                                    height:MediaQuery.of(context).size.height*0.2,
-                                                                    child: Row(
-                                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                                      children: [
-                                                                        CircularProgressIndicator(),
-                                                                      ],
-                                                                    )
-                                                                ),
-                                                                errorWidget: (context, url, error) =>
-                                                                    Container(
-                                                                        width: MediaQuery.of(context).size.width*0.5,
-                                                                        height:MediaQuery.of(context).size.height*0.2,
-                                                                        child: Icon(Icons.error)
-                                                                    ),
-                                                              )
+                                                                  ? MyWidget().defimagewidget(context)
                                                                   :CachedNetworkImage(
                                                                 imageUrl:AppConstans.BASE_URL2 + "images/" + asosiy_img!,
                                                                 placeholder: (context, url) => Container(
@@ -247,11 +280,7 @@ class _LikePageState extends State<LikePage> {
                                                                     )
                                                                 ),
                                                                 errorWidget: (context, url, error) =>
-                                                                    Container(
-                                                                        width: MediaQuery.of(context).size.width*0.5,
-                                                                        height:MediaQuery.of(context).size.height*0.2,
-                                                                        child: Icon(Icons.error)
-                                                                    ),
+                                                                    MyWidget().defimagewidget(context)
                                                               ),
                                                               Positioned(
                                                                 right: 10,
@@ -332,7 +361,32 @@ class _LikePageState extends State<LikePage> {
                                                                               EdgeInsets.zero,
                                                                         ),
                                                                         onPressed:
-                                                                            () {},
+                                                                            () async{
+                                                                              Dialogs.materialDialog(
+                                                                                  color: Colors.white,
+                                                                                  msg: "Chatni boshlashni xoxlaysizmi?",
+                                                                                  titleStyle: TextStyle(fontSize: 18),
+                                                                                  titleAlign: TextAlign.center,
+                                                                                  title: "Mehr",
+                                                                                  customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                                                                  context: context,
+                                                                                  actions: [
+                                                                                    TextButton(onPressed: (){
+                                                                                      Navigator.pop(context);
+                                                                                    }, child: Text("Orqaga qaytish")),
+                                                                                    IconsButton(
+                                                                                      onPressed: () async{
+                                                                                        Navigator.pop(context);
+                                                                                        await create_chat(user_id,state.products[index].productOwnerUserId ?? 0);
+                                                                                      },
+                                                                                      text: 'Chatni boshlash',
+                                                                                      // iconData: Icons.done,
+                                                                                      color: Colors.blue,
+                                                                                      textStyle: TextStyle(color: Colors.white),
+                                                                                      iconColor: Colors.white,
+                                                                                    ),
+                                                                                  ]);
+                                                                            },
                                                                         icon:
                                                                             Icon(
                                                                           Icons
@@ -369,12 +423,48 @@ class _LikePageState extends State<LikePage> {
                                                                           padding:
                                                                               EdgeInsets.zero,
                                                                         ),
-                                                                        onPressed:
-                                                                            () {
-                                                                          makePhoneCall(state
-                                                                              .products[index]
-                                                                              .productOwnerPhone!);
-                                                                        },
+                                                                            onPressed:
+                                                                                () {
+                                                                            if(state
+                                                                                .products[index]
+                                                                                .productOwnerPhone != null){
+                                                                                Dialogs.materialDialog(
+                                                                                  color: Colors.white,
+                                                                                  msg: "Telefon raqam orqali bog'lanishni xoxlaysizmi?",
+                                                                                  titleStyle: TextStyle(fontSize: 20),
+                                                                                  titleAlign: TextAlign.center,
+                                                                                  title: "Mehr",
+                                                                                  customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                                                                  context: context,
+                                                                                  actions: [
+                                                                                    TextButton(onPressed: (){
+                                                                                      Navigator.pop(context);
+                                                                                    }, child: Text("Orqaga qaytish")),
+                                                                                    IconsButton(
+                                                                                      onPressed: () async{
+                                                                                        makePhoneCall(state
+                                                                                            .products[index]
+                                                                                            .productOwnerPhone!);
+                                                                                      },
+                                                                                      text: 'Telefon qilish',
+                                                                                      // iconData: Icons.done,
+                                                                                      color: Colors.blue,
+                                                                                      textStyle: TextStyle(color: Colors.white),
+                                                                                      iconColor: Colors.white,
+                                                                                    ),
+                                                                                  ]);
+                                                                            }
+                                                                            else{
+                                                                              Fluttertoast.showToast(
+                                                                                  msg: "Bu foydalanuvchi telefon raqamini hali kiritmagan!",
+                                                                                  toastLength: Toast.LENGTH_SHORT,
+                                                                                  gravity: ToastGravity.BOTTOM,
+                                                                                  timeInSecForIosWeb: 1,
+                                                                                  backgroundColor: Colors.red,
+                                                                                  textColor: Colors.white,
+                                                                                  fontSize: 16.0);
+                                                                            }
+                                                                            } ,
                                                                         icon:
                                                                             Icon(
                                                                           Icons
@@ -424,7 +514,21 @@ class _LikePageState extends State<LikePage> {
                                                       ],
                                                     ),
                                                   ),
-                                                  onTap: () {},
+                                                  onTap: () {
+                                                    Navigator.push(context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) {
+                                                              return BlocProvider(
+                                                                create: (ctx) =>
+                                                                    GetOneProductBloc(),
+                                                                child: ProductInfo(
+                                                                    product_id: state
+                                                                        .products[
+                                                                    index]
+                                                                        .id!),
+                                                              );
+                                                            }));
+                                                  },
                                                 ),
                                               ],
                                             ),

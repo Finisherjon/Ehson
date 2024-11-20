@@ -150,14 +150,14 @@ class _AddYordamState extends State<AddYordam> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("Yordam"),
-          centerTitle: true,
-        ),
-        body: LoaderOverlay(
-          useDefaultLoading: false,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Yordam"),
+        centerTitle: true,
+      ),
+      body: LoaderOverlay(
+        useDefaultLoading: false,
+        child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(8.0),

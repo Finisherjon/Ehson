@@ -8,6 +8,8 @@ import 'package:ehson/api/models/like_model.dart';
 import 'package:ehson/api/models/message_list_model.dart';
 import 'package:ehson/api/models/one_comment_model.dart';
 import 'package:ehson/api/models/one_feed_model.dart';
+import 'package:ehson/api/models/one_help_model.dart';
+import 'package:ehson/api/models/one_product_model.dart';
 import 'package:ehson/api/models/product_model.dart';
 import 'package:ehson/api/models/user_model.dart';
 import 'package:ehson/api/models/yordam_model.dart';
@@ -16,6 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/constants.dart';
 import 'package:http/http.dart' as http;
 
+import 'models/get_filter_product_model.dart';
 import 'models/get_like_model.dart';
 import 'models/search_model.dart';
 
@@ -150,6 +153,97 @@ class EhsonRepository {
           bool token_isrefresh = await refresh_token(token);
           if (token_isrefresh) {
             return await get_me();
+          } else {
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("getData->Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print(("getData->Server error $e"));
+      throw Exception("getData->Server error $e");
+    }
+  }
+
+  Future<OneHelpModel?> getonehelp(int help_id) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    OneHelpModel? onehelpmodel;
+    var url = Uri.parse(AppConstans.BASE_URL + "/getonehelp");
+    Map data = {"help_id": help_id};
+    var body = json.encode(data);
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          onehelpmodel = OneHelpModel.fromJson(resdata);
+          return onehelpmodel;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await getonehelp(help_id);
+          } else {
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("getData->Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print(("getData->Server error $e"));
+      throw Exception("getData->Server error $e");
+    }
+  }
+
+  Future<OneProductModel?> getoneproduct(int product_id) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    OneProductModel? oneproductmodel;
+
+    var url = Uri.parse(AppConstans.BASE_URL + "/getoneproduct");
+    Map data = {"product_id": product_id};
+    var body = json.encode(data);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          oneproductmodel = OneProductModel.fromJson(resdata);
+          return oneproductmodel;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await getoneproduct(product_id);
           } else {
             throw Exception("Server error code ${response.statusCode}");
           }
@@ -627,6 +721,63 @@ class EhsonRepository {
         print(("getData->Server error $e"));
         throw Exception("getData->Server error $e");
       }
+    }
+  }
+
+  Future<FilterProductModel?> filter_product(int category_id, int city_id, String? next_page_url) async
+  {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    FilterProductModel? filterProduct;
+    print("token bor");
+    var url;
+    Map data;
+    {
+      data = {"category_id": category_id, "city_id": city_id};
+    }
+    if (next_page_url == null) {
+      return filterProduct;
+    } else if (next_page_url == '') {
+      url = Uri.parse(AppConstans.BASE_URL + "/filterproduct");
+    } else {
+      url = Uri.parse(next_page_url);
+    }
+    var body = json.encode(data);
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          filterProduct = FilterProductModel.fromJson(resdata);
+          return filterProduct;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await filter_product(category_id, city_id, next_page_url);
+          } else {
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("getData->Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print(("getData->Server error $e"));
+      throw Exception("getData->Server error $e");
     }
   }
 

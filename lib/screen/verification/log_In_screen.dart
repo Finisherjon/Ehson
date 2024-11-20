@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ehson/adjust_size.dart';
+import 'package:ehson/constants/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -82,6 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
         // appBar: AppBar(title: const Text('Google SignIn Screen')),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 35),
@@ -90,8 +92,9 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                height: Sizes.heights(context) * 0.17,
+                height: Sizes.heights(context) * 0.04,
               ),
+              Image(image: AssetImage('assets/images/mehr.png'),height: MediaQuery.of(context).size.height*0.12,width: MediaQuery.of(context).size.width*0.1,),
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,13 +138,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                       },
                       child: Card(
-                        shape: StadiumBorder(
-                          side: BorderSide(
-                            color: Colors.black,
-                            width: 0.5,
-                          ),
-                        ),
-                        color: Colors.white,
+                        // shape: StadiumBorder(
+                        //   side: BorderSide(
+                        //     color: Colors.black,
+                        //     width: 0.5,
+                        //   ),
+                        // ),
+                        color: Colors.blue,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -149,16 +152,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             CircleAvatar(
                               radius: 20, // Image radius
                               backgroundImage: NetworkImage(
-                                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6WwgH7Nl5_AW9nDCnR2Ozb_AU3rkIbSJdAg&s'),
+                                  AppConstans.BASE_URL2 + "images/google.png"),
                             ),
                             SizedBox(
-                              width: Sizes.widths(context) * 0.02,
+                              width: Sizes.widths(context) * 0.03,
                             ),
                             Text(
                               "Google orqali kirish",
                               style: GoogleFonts.roboto(
                                 textStyle: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 17),
+                                    fontWeight: FontWeight.bold, fontSize: 17,color: Colors.white),
                               ),
                             ),
                           ],
