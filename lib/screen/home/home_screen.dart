@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ehson/adjust_size.dart';
 import 'package:ehson/api/models/create_chat_model.dart';
 import 'package:ehson/bloc/add_product/add_product_bloc.dart';
+import 'package:ehson/bloc/filter_product/filter_product_bloc.dart';
+import 'package:ehson/bloc/get_filter_product/get_filter_product_bloc.dart';
 import 'package:ehson/bloc/get_one_product/get_one_product_bloc.dart';
 import 'package:ehson/bloc/homebloc/home_bloc.dart';
 import 'package:ehson/bloc/message/message_list_bloc.dart';
@@ -65,17 +67,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int user_id = 0;
+  bool admin = false;
+
 
   Future<void> getSharedPrefs() async {
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
     final SharedPreferences prefs = await _prefs;
     user_id = prefs.getInt("user_id") ?? 0;
+    admin = prefs.getBool("admin") ?? false;
   }
 
   //shera norm qilib chiqor mahsulotlani ui taxla olxdanam dizayn ol manam tashagandan ol rasmla borediku ui qilivur image bilan productni qushadigani qilamiz
   Future<bool> add_like_product(int? product_id) async {
     String add_like = await EhsonRepository().add_like(product_id);
+    if (add_like.contains("Success")) {
+      return true;
+    } else {
+      Fluttertoast.showToast(
+          msg: "Serverda xatolik qayta urunib ko'ring!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return false;
+    }
+  }
+
+  Future<bool> delete_product(int? product_id) async {
+    String add_like = await EhsonRepository().delete_product(product_id);
     if (add_like.contains("Success")) {
       return true;
     } else {
@@ -295,11 +317,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.blueAccent,
                         ),
                         onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => FilterScreen(),
-                            ),
-                          );
+                          // Navigator.of(context).push(
+                          //   MaterialPageRoute(
+                          //     builder: (context) => FilterScreen(),
+                          //   ),
+                          // );
+
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                                return BlocProvider(
+                                  create: (ctx) => GetFilterProductBloc(),
+                                  child: FilterScreen(),
+                                );
+                              }));
                         },
                       ),
                     ],
@@ -467,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                 errorWidget: (context, url, error) =>
                                                                     MyWidget().defimagewidget(context)
                                                               ),
-                                                              Positioned(
+                                                              admin || user_id == state.products[index].userId ?  Positioned(
                                                                 left: 10,
                                                                 top: 10,
                                                                 child: Container(
@@ -500,7 +530,47 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     ),
                                                                     onPressed:
                                                                         () async {
+                                                                          Dialogs.materialDialog(
+                                                                              color: Colors.white,
+                                                                              msg: "Ushbu "+state.products[index].title.toString()+" nomli mahsulotni o'chirishni xoxlaysizmi?",
+                                                                              titleStyle: TextStyle(fontSize: 18),
+                                                                              titleAlign: TextAlign.center,
+                                                                              title: "Mehr",
+                                                                              customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                                                              context: context,
+                                                                              actions: [
+                                                                                TextButton(onPressed: (){
+                                                                                  Navigator.pop(context);
+                                                                                }, child: Text("Yo'q")),
+                                                                                IconsButton(
+                                                                                  onPressed: () async{
+                                                                                    context.loaderOverlay.show();
 
+                                                                                    int? product_id = state
+                                                                                        .products[
+                                                                                    index]
+                                                                                        .id;
+                                                                                    bool
+                                                                                    delete_p =
+                                                                                    await delete_product(
+                                                                                        product_id);
+
+                                                                                    if (delete_p == true) {
+                                                                                      Navigator.pop(context);
+                                                                                      setState(() {
+                                                                                        state.products.removeAt(index);
+                                                                                      });
+                                                                                    }
+
+                                                                                    context.loaderOverlay.hide();
+                                                                                  },
+                                                                                  text: 'Ha',
+                                                                                  // iconData: Icons.done,
+                                                                                  color: Colors.blue,
+                                                                                  textStyle: TextStyle(color: Colors.white),
+                                                                                  iconColor: Colors.white,
+                                                                                ),
+                                                                              ]);
 
                                                                     },
                                                                     //productlani oladigan api borku uwani uzgartiramiz man usha productga like bosganmi yoqmi ushaniyam beraman keyen usha bilan aniqlaymiz
@@ -510,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     ),
                                                                   ),
                                                                 ),
-                                                              ),
+                                                              ):SizedBox(),
                                                               Positioned(
                                                                 right: 10,
                                                                 top: 10,
@@ -564,16 +634,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                             ? 1
                                                                             : 0;
                                                                       }
-                                                                      //shuni taxla
-                                                                      // state.products[index].phone
-                                                                      //qara statega phoneyam kelopti telefonchani bossa telefon qilishga utsin nomer terib shunoqa package bor
 
-                                                                      //kurdinmi jura ha
-
-                                                                      //san chatga utgan payt awibka chiqopti ui bilan manimca uwani tugirla man apini update qilay getproductni xay
-
-                                                                      //hozir like quwish post buli faqat ui bilan integratsiya qilish kerak
-                                                                      setState(
+                                                                          setState(
                                                                           () {
                                                                         _heartIcon =
                                                                             !_heartIcon;

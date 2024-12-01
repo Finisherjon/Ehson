@@ -130,9 +130,9 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: SingleChildScrollView(
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
           physics: NeverScrollableScrollPhysics(),
           child: Column(
             children: [
@@ -141,66 +141,64 @@ class _SearchPageState extends State<SearchPage> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Expanded(
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        icon: Icon(Icons.arrow_back_ios),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icon(Icons.arrow_back_ios),
+                      color: Colors.blueAccent,
+                    ),
+                    Container(
+                      height: Sizes.heights(context) * 0.066,
+                      width: Sizes.widths(context) * 0.7,
+                      child: TextFormField(
+                        controller: _search_controller,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: 'Nimani qidiryapsiz?',
+                          hintStyle: TextStyle(color: Colors.grey),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(20.0),
+                            ),
+                            borderSide: BorderSide(
+                                color: Colors.blueAccent, width: 2.0),
+                          ),
+                          //empty uchun bita widget taxla constanta widget hamma joyga ushani qoyib chiq
+                          //empty emas boshqa so'z bo'sin hamma joyga
+                          //rangiyam uziyam zur
+                          //nma qilopsan?
+                          //manabuni rangini uzgartiriwni kurib utirodim
+                          // prefixIcon: Icon(
+                          //   Icons.search,
+                          //   color: Colors.grey,
+                          //   size: IconSize.smallIconSize(context),
+                          // ),
+                        ),
+                        style: TextStyle(color: Colors.black87),
+                        onChanged: (query) {},
+                      ),
+                    ),
+
+                    //pasga nimadir chiqopti ui tugirla
+                    IconButton(
+                      icon: Icon(
+                        Icons.search,
+                        size: IconSize.largeIconSize(context),
                         color: Colors.blueAccent,
                       ),
-                      Container(
-                        height: Sizes.heights(context) * 0.066,
-                        width: Sizes.widths(context) * 0.7,
-                        child: TextFormField(
-                          controller: _search_controller,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                            hintText: 'Nimani qidiryapsiz?',
-                            hintStyle: TextStyle(color: Colors.grey),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(20.0),
-                              ),
-                              borderSide: BorderSide(
-                                  color: Colors.blueAccent, width: 2.0),
-                            ),
-                            //empty uchun bita widget taxla constanta widget hamma joyga ushani qoyib chiq
-                            //empty emas boshqa so'z bo'sin hamma joyga
-                            //rangiyam uziyam zur
-                            //nma qilopsan?
-                            //manabuni rangini uzgartiriwni kurib utirodim
-                            // prefixIcon: Icon(
-                            //   Icons.search,
-                            //   color: Colors.grey,
-                            //   size: IconSize.smallIconSize(context),
-                            // ),
-                          ),
-                          style: TextStyle(color: Colors.black87),
-                          onChanged: (query) {},
-                        ),
-                      ),
+                      onPressed: () {
+                        BlocProvider.of<SearchProductBloc>(context).add(
+                            ReloadSearchProductEvent(
+                                text: _search_controller.text.toString()));
 
-                      //pasga nimadir chiqopti ui tugirla
-                      IconButton(
-                        icon: Icon(
-                          Icons.search,
-                          size: IconSize.largeIconSize(context),
-                          color: Colors.blueAccent,
-                        ),
-                        onPressed: () {
-                          BlocProvider.of<SearchProductBloc>(context).add(
-                              ReloadSearchProductEvent(
-                                  text: _search_controller.text.toLowerCase()));
-
-                          // Navigator.of(context).push(
-                          //     MaterialPageRoute(builder: (context) => Profile()));
-                        },
-                      ),
-                    ],
-                  ),
+                        // Navigator.of(context).push(
+                        //     MaterialPageRoute(builder: (context) => Profile()));
+                      },
+                    ),
+                  ],
                 ),
               ),
               SizedBox(
@@ -364,7 +362,7 @@ class _SearchPageState extends State<SearchPage> {
                                                                       add_like =
                                                                       await add_like_product(
                                                                           product_id);
-
+            
                                                                   if (add_like) {
                                                                     state
                                                                         .products[
@@ -542,16 +540,16 @@ class _SearchPageState extends State<SearchPage> {
             ],
           ),
         ),
-
-        //like pageni ui taxladinmi? ha qarib
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     Navigator.of(context).push(
-        //         MaterialPageRoute(builder: (context) => AddProductScreen()));
-        //   },
-        //   child: Icon(Icons.add),
-        // ),
       ),
+    
+      //like pageni ui taxladinmi? ha qarib
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.of(context).push(
+      //         MaterialPageRoute(builder: (context) => AddProductScreen()));
+      //   },
+      //   child: Icon(Icons.add),
+      // ),
     );
   }
 }

@@ -30,6 +30,10 @@ class PostLogin {
         //buyogla dabdalaku nmala qlopsan uzi
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata['status'] == true) {
+          final Future<SharedPreferences> _prefs =
+          SharedPreferences.getInstance();
+          final SharedPreferences prefs = await _prefs;
+          prefs.setBool("admin", resdata['user']['admin']);
           return resdata['message'];
 
         } else {

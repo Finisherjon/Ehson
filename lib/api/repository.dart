@@ -466,6 +466,154 @@ class EhsonRepository {
     }
   }
 
+  Future<String> delete_product(int? product_id) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    var uri = Uri.parse(AppConstans.BASE_URL + '/deleteproduct');
+    Map data;
+    {
+      data = {
+        "product_id": product_id,
+      };
+    }
+
+    var body = json.encode(data);
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+      if (response.statusCode == 200) {
+        final resdata = json.decode(utf8.decode(response.bodyBytes));
+        print(resdata);
+        if (resdata["status"] == true) {
+          return "Success";
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await delete_product(product_id);
+          } else {
+            return "Error: ${response.statusCode}";
+          }
+        } else {
+          return "Error: ${response.statusCode}";
+        }
+      } else {
+        return "Error: ${response.statusCode}";
+      }
+    } catch (e) {
+      print("Error: $e");
+      return "Exception: $e";
+    }
+  }
+
+  Future<String> delete_feed(int? feed_id) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    var uri = Uri.parse(AppConstans.BASE_URL + '/deletefeed');
+    Map data;
+    {
+      data = {
+        "feed_id": feed_id,
+      };
+    }
+
+    var body = json.encode(data);
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+      if (response.statusCode == 200) {
+        final resdata = json.decode(utf8.decode(response.bodyBytes));
+        print(resdata);
+        if (resdata["status"] == true) {
+          return "Success";
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await delete_feed(feed_id);
+          } else {
+            return "Error: ${response.statusCode}";
+          }
+        } else {
+          return "Error: ${response.statusCode}";
+        }
+      } else {
+        return "Error: ${response.statusCode}";
+      }
+    } catch (e) {
+      print("Error: $e");
+      return "Exception: $e";
+    }
+  }
+
+
+  Future<String> delete_help(int? help_id) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    var uri = Uri.parse(AppConstans.BASE_URL + '/deletehelp');
+    Map data;
+    {
+      data = {
+        "help_id": help_id,
+      };
+    }
+
+    var body = json.encode(data);
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      );
+      if (response.statusCode == 200) {
+        final resdata = json.decode(utf8.decode(response.bodyBytes));
+        print(resdata);
+        if (resdata["status"] == true) {
+          return "Success";
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await delete_help(help_id);
+          } else {
+            return "Error: ${response.statusCode}";
+          }
+        } else {
+          return "Error: ${response.statusCode}";
+        }
+      } else {
+        return "Error: ${response.statusCode}";
+      }
+    } catch (e) {
+      print("Error: $e");
+      return "Exception: $e";
+    }
+  }
+
   Future<String> add_like(int? product_id) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -1109,10 +1257,9 @@ class EhsonRepository {
     SearchModel? search;
     print("token bor");
     var url;
-    Map data;
-    {
-      data = {"text": text};
-    }
+    Map data = {
+      "text": text
+    };
     if (next_page_url == null) {
       return search;
     } else if (next_page_url == '') {

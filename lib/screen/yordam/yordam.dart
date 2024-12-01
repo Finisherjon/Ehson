@@ -105,6 +105,23 @@ class _YordamState extends State<Yordam> {
     super.dispose();
   }
 
+  Future<bool> delete_help(int? help_id) async {
+    String add_like = await EhsonRepository().delete_help(help_id);
+    if (add_like.contains("Success")) {
+      return true;
+    } else {
+      Fluttertoast.showToast(
+          msg: "Serverda xatolik qayta urunib ko'ring!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return false;
+    }
+  }
+
   bool _isNearBottom() {
     if (!_scrollController.hasClients ||
         _scrollController.position.maxScrollExtent == 0) return false;
@@ -114,12 +131,14 @@ class _YordamState extends State<Yordam> {
   }
 
   int user_id = 0;
+  bool admin = false;
 
   Future<void> getSharedPrefs() async {
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
     final SharedPreferences prefs = await _prefs;
     user_id = prefs.getInt("user_id") ?? 0;
+    admin = prefs.getBool("admin") ?? false;
   }
 
 
@@ -233,6 +252,46 @@ class _YordamState extends State<Yordam> {
                                           width: 0.1
                                         ),
                                       ),
+                                      trailing: admin || state.products[index].userId == user_id ? IconButton(icon: Icon(Icons.delete,color: Colors.red,),
+                                      onPressed: (){
+                                        Dialogs.materialDialog(
+                                            color: Colors.white,
+                                            msg: "Ushbu "+state.products[index].title.toString()+" nomli mahsulotni o'chirishni xoxlaysizmi?",
+                                            titleStyle: TextStyle(fontSize: 18),
+                                            titleAlign: TextAlign.center,
+                                            title: "Mehr",
+                                            customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                            context: context,
+                                            actions: [
+                                              TextButton(onPressed: (){
+                                                Navigator.pop(context);
+                                              }, child: Text("Yo'q")),
+                                              IconsButton(
+                                                onPressed: () async{
+                                                  context.loaderOverlay.show();
+
+                                                  int? help_id = state.products[index].id;
+                                                  bool
+                                                  delete_p =
+                                                  await delete_help(
+                                                      help_id);
+
+                                                  if (delete_p == true) {
+                                                    Navigator.pop(context);
+                                                    setState(() {
+                                                      state.products.removeAt(index);
+                                                    });
+                                                  }
+                                                  context.loaderOverlay.hide();
+                                                },
+                                                text: 'Ha',
+                                                // iconData: Icons.done,
+                                                color: Colors.blue,
+                                                textStyle: TextStyle(color: Colors.white),
+                                                iconColor: Colors.white,
+                                              ),
+                                            ]);
+                                      },):SizedBox(),
                                     leading:  state.products[index].img == null || state.products[index].img == ""
                                       ?   ConstrainedBox(
                                     constraints: BoxConstraints(
@@ -251,12 +310,12 @@ class _YordamState extends State<Yordam> {
                                             ),
                                             child: MyWidget().defimagehelpwidget(context),)
                                                                 ),
-                                                                title: Text(state.products[index].title.toString(),style: TextStyle(fontSize: 18),),
+                                                                title: Text(state.products[index].title.toString(),style: TextStyle(fontSize: 18),maxLines: 1,),
                                                                 subtitle: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(state.products[index].info.toString(),style: TextStyle(fontSize: 16)),
+                                      Text(state.products[index].info.toString(),style: TextStyle(fontSize: 16),maxLines: 2,),
                                       // Row(
                                       //   mainAxisAlignment: MainAxisAlignment.end,
                                       //   children: [

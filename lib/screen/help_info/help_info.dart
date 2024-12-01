@@ -37,6 +37,23 @@ class _HelpInfoState extends State<HelpInfo> {
     'https://paragonfootwear.com/cdn/shop/files/MK8009K-NYB_LS.jpg?v=1718789930&width=1920',
   ];
 
+  Future<bool> delete_help(int? help_id) async {
+    String add_like = await EhsonRepository().delete_help(help_id);
+    if (add_like.contains("Success")) {
+      return true;
+    } else {
+      Fluttertoast.showToast(
+          msg: "Serverda xatolik qayta urunib ko'ring!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return false;
+    }
+  }
+
   Future<void> create_chat(int user_one,int user_two)async{
     context.loaderOverlay.show();
     CreateChatModel? createChatModel = await EhsonRepository().create_my_chat(user_one,user_two);
@@ -68,12 +85,14 @@ class _HelpInfoState extends State<HelpInfo> {
   }
 
   int user_id = 0;
+  bool admin = false;
 
   Future<void> getSharedPrefs() async {
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
     final SharedPreferences prefs = await _prefs;
     user_id = prefs.getInt("user_id") ?? 0;
+    admin = prefs.getBool("admin") ?? false;
   }
 
   final PageController _pageController = PageController();
@@ -199,10 +218,7 @@ class _HelpInfoState extends State<HelpInfo> {
                                 SizedBox(height: 10),
                                 Text(
                                   state.oneHelpModel.help!.info!,
-                                  maxLines: 2,
-                                  overflow:
-                                  TextOverflow
-                                      .ellipsis,
+
                                   style: GoogleFonts
                                       .roboto(
                                     textStyle:

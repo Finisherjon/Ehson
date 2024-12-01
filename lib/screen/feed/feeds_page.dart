@@ -1,14 +1,21 @@
 import 'dart:async';
 
+import 'package:ehson/api/repository.dart';
 import 'package:ehson/bloc/one_feed_block/one_feed_bloc.dart';
 // import 'package:ehson/screen/feed/comment.dart';
 import 'package:ehson/screen/feed/lichka.dart';
 import 'package:ehson/screen/feed//one_feed_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:loader_overlay/loader_overlay.dart';
+import 'package:material_dialogs/dialogs.dart';
+import 'package:material_dialogs/shared/types.dart';
+import 'package:material_dialogs/widgets/buttons/icon_button.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../api/models/chat_model.dart';
 import '../../bloc/chat/chat_bloc.dart';
@@ -31,6 +38,7 @@ class _FeedsPageState extends State<FeedsPage> {
   @override
   void initState() {
     super.initState();
+    getSharedPrefs();
     BlocProvider.of<ChatBloc>(context).add(ReloadchatEvent(date: ""));
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
@@ -76,6 +84,34 @@ class _FeedsPageState extends State<FeedsPage> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   ChatModel? chatModel;
+
+  int user_id = 0;
+  bool admin = false;
+
+  Future<bool> delete_feed(int? feed_id) async {
+    String add_like = await EhsonRepository().delete_feed(feed_id);
+    if (add_like.contains("Success")) {
+      return true;
+    } else {
+      Fluttertoast.showToast(
+          msg: "Serverda xatolik qayta urunib ko'ring!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return false;
+    }
+  }
+
+  Future<void> getSharedPrefs() async {
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
+    final SharedPreferences prefs = await _prefs;
+    user_id = prefs.getInt("user_id") ?? 0;
+    admin = prefs.getBool("admin") ?? false;
+  }
 
   Future<void> _onrefresh() async {
     BlocProvider.of<ChatBloc>(context).add(ReloadchatEvent(date: ""));
@@ -135,110 +171,160 @@ class _FeedsPageState extends State<FeedsPage> {
           centerTitle: true,
           title: Text("Mavzu"),
         ),
-        body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: BlocBuilder<ChatBloc, ChatState>(
-            builder: (context, state) {
-              switch (state.status) {
-                case ChatProduct.loading:
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                case ChatProduct.success:
-                  if (state.products.isEmpty) {
-                    return Container(
-                      child: MyWidget().mywidget("Hech narsa topilmadi!"),
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.86,
+        body: LoaderOverlay(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: BlocBuilder<ChatBloc, ChatState>(
+              builder: (context, state) {
+                switch (state.status) {
+                  case ChatProduct.loading:
+                    return Center(
+                      child: CircularProgressIndicator(),
                     );
-                  }
-                  return SmartRefresher(
-                    controller: _refreshController,
-                    onRefresh: _onrefresh,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      // physics: NeverScrollableScrollPhysics(),
-                      itemCount: state.islast
-                          ? state.products.length
-                          : state.products.length + 1,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        return index >= state.products.length
-                            ? Center(
-                                child: CircularProgressIndicator(),
-                              )
-                            : Column(
-                              children: [
-                                ListTile(
-                                  onTap: () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(
-                                            builder: (context) {
-                                      return BlocProvider(
-                                        create: (ctx) => OneFeedBloc(),
-                                        child: OneFeedPage(
-                                            mavzu_id:
-                                                state.products[index].id!),
-                                      );
-                                    }));
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //       builder: (context) => OneFeedPage(mavzu_id: state.products[index].id!)),
-                                    // );
-                                  },
-                                  leading: CircleAvatar(
-                                    radius: 30,
-                                    backgroundImage: state.products[index].avatar != null ? NetworkImage(
-                                        AppConstans.BASE_URL2 + "images/" +state.products[index].avatar.toString(),
-                                    ) : null,
-                                    child: state.products[index].avatar == null ? Icon(Icons.person) : SizedBox(),
-                                  ),
-                                  title: Text(state.products[index].name.toString(),style: TextStyle(fontWeight: FontWeight.bold),),
-                                  // title: Text(state.products[index].body
-                                  //     .toString()),
-                                  subtitle: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                          state.products[index].title
-                                              .toString(),
-                                          maxLines: 1,
-                                        overflow: TextOverflow
-                                            .ellipsis,
-                                        style: TextStyle(fontSize: 14),
-
-                                      ),
-                                      Text(
-                                          state.products[index].body
-                                              .toString(),
-                                          maxLines: 1,
-                                        overflow: TextOverflow
-                                            .ellipsis,
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: Text(formatTimestamp(state.products[index].createdAt.toString()),style: TextStyle(fontSize: 8),),
-                                ),
-                                Container(
-                                  child: Divider(
-                                    color: Colors.grey[300],
-                                  ),
-                                  width: 400,
+                  case ChatProduct.success:
+                    if (state.products.isEmpty) {
+                      return Container(
+                        child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.86,
+                      );
+                    }
+                    return SmartRefresher(
+                      controller: _refreshController,
+                      onRefresh: _onrefresh,
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        // physics: NeverScrollableScrollPhysics(),
+                        itemCount: state.islast
+                            ? state.products.length
+                            : state.products.length + 1,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          return index >= state.products.length
+                              ? Center(
+                                  child: CircularProgressIndicator(),
                                 )
-                              ],
-                            );
-                      },
-                    ),
-                  );
-                case ChatProduct.error:
-                  return Center(
-                    child: Text("Internet error"),
-                  );
-              }
-            },
+                              : Column(
+                                children: [
+                                  ListTile(
+                                    onTap: () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(
+                                              builder: (context) {
+                                        return BlocProvider(
+                                          create: (ctx) => OneFeedBloc(),
+                                          child: OneFeedPage(
+                                              mavzu_id:
+                                                  state.products[index].id!),
+                                        );
+                                      }));
+                                      // Navigator.push(
+                                      //   context,
+                                      //   MaterialPageRoute(
+                                      //       builder: (context) => OneFeedPage(mavzu_id: state.products[index].id!)),
+                                      // );
+                                    },
+                                    leading: CircleAvatar(
+                                      radius: 30,
+                                      backgroundImage: state.products[index].avatar != null ? NetworkImage(
+                                          AppConstans.BASE_URL2 + "images/" +state.products[index].avatar.toString(),
+                                      ) : null,
+                                      child: state.products[index].avatar == null ? Icon(Icons.person) : SizedBox(),
+                                    ),
+                                    title: Text(state.products[index].name.toString(),style: TextStyle(fontWeight: FontWeight.bold),),
+                                    // title: Text(state.products[index].body
+                                    //     .toString()),
+                                    subtitle: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            state.products[index].title
+                                                .toString(),
+                                            maxLines: 1,
+                                          overflow: TextOverflow
+                                              .ellipsis,
+                                          style: TextStyle(fontSize: 14),
+
+                                        ),
+                                        Text(
+                                            state.products[index].body
+                                                .toString(),
+                                            maxLines: 1,
+                                          overflow: TextOverflow
+                                              .ellipsis,
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Column(
+                                      mainAxisAlignment: admin || state.products[index].userId == user_id ? MainAxisAlignment.spaceBetween: MainAxisAlignment.center,
+                                      children: [
+                                        admin || state.products[index].userId == user_id ? InkWell(child: Icon(Icons.delete,color: Colors.red,),onTap: (){
+                                          Dialogs.materialDialog(
+                                              color: Colors.white,
+                                              msg: "Ushbu "+state.products[index].title.toString()+" nomli mavzuni o'chirishni xoxlaysizmi?",
+                                              titleStyle: TextStyle(fontSize: 18),
+                                              titleAlign: TextAlign.center,
+                                              title: "Mehr",
+                                              customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                              context: context,
+                                              actions: [
+                                                TextButton(onPressed: (){
+                                                  Navigator.pop(context);
+                                                }, child: Text("Yo'q")),
+                                                IconsButton(
+                                                  onPressed: () async{
+                                                    context.loaderOverlay.show();
+
+                                                    int? product_id = state
+                                                        .products[
+                                                    index]
+                                                        .id;
+                                                    bool
+                                                    delete_p =
+                                                    await delete_feed(
+                                                        product_id);
+
+                                                    if (delete_p == true) {
+                                                      Navigator.pop(context);
+                                                      setState(() {
+                                                        state.products.removeAt(index);
+                                                      });
+                                                    }
+
+                                                    context.loaderOverlay.hide();
+                                                  },
+                                                  text: 'Ha',
+                                                  // iconData: Icons.done,
+                                                  color: Colors.blue,
+                                                  textStyle: TextStyle(color: Colors.white),
+                                                  iconColor: Colors.white,
+                                                ),
+                                              ]);
+                                        },):SizedBox(),
+                                        Text(formatTimestamp(state.products[index].createdAt.toString()),style: TextStyle(fontSize: 8),),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    child: Divider(
+                                      color: Colors.grey[300],
+                                    ),
+                                    width: 400,
+                                  )
+                                ],
+                              );
+                        },
+                      ),
+                    );
+                  case ChatProduct.error:
+                    return Center(
+                      child: Text("Internet error"),
+                    );
+                }
+              },
+            ),
           ),
         ),
       ),
