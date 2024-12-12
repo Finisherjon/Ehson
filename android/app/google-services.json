@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "892715575526",
     "project_id": "ehson-6d76d",
-    "storage_bucket": "ehson-6d76d.appspot.com"
+    "storage_bucket": "ehson-6d76d.firebasestorage.app"
   },
   "client": [
     {
@@ -12,7 +12,36 @@
           "package_name": "uz.miraziz.ehson.ehson"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "892715575526-4gcstoj0t75rms2h2ej1pm6q50h0r7ei.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.miraziz.ehson.ehson",
+            "certificate_hash": "9549f6bb96b68d5637d33267050ff280ba08fd05"
+          }
+        },
+        {
+          "client_id": "892715575526-ioqib49abticekpu88c4bbtrdfpcjihf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.miraziz.ehson.ehson",
+            "certificate_hash": "514423c8af905cb4f8fd03e47b27f89ce310e635"
+          }
+        },
+        {
+          "client_id": "892715575526-vm54ok6pr1ufnav57bjkqfe10k25p70m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.miraziz.ehson.ehson",
+            "certificate_hash": "e271dd455065d999fc173cebe8a50e9e119d9fdb"
+          }
+        },
+        {
+          "client_id": "892715575526-4155vc12lgkd7aarigfcbqs06d2b3u18.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAVqdkABR2L5mzLt6oXMb1xfiTjHNzFxMw"
@@ -20,7 +49,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "892715575526-4155vc12lgkd7aarigfcbqs06d2b3u18.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

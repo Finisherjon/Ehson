@@ -58,6 +58,8 @@ dependencies:
   cached_network_image: ^3.2.3
   socket_io_client: ^3.0.1
   material_dialogs: ^1.1.5
+  firebase_messaging: ^14.9.4
+  flutter_local_notifications: ^18.0.1
   intl: ^0.18.0
 
 #  location: ^7.0.0

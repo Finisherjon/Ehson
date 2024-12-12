@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:ehson/adjust_size.dart';
 import 'package:ehson/constants/constants.dart';
+import 'package:ehson/screen/service/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +27,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   ValueNotifier userCredential = ValueNotifier('');
+
+  final _firebaseMessaging = FirebaseMessaging.instance;
+
 
   Future<dynamic> signInWithGoogle() async {
     try {
@@ -54,17 +59,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> login(String name, String email, String password) async {
+  Future<void> login(String name, String email, String password,String fcm_token) async {
     try {
-      String resData = await PostLogin().postLogin(name, email, password);
+      String resData = await PostLogin().postLogin(name, email, password,fcm_token);
       if (resData != "Error") {
         final Future<SharedPreferences> _prefs =
             SharedPreferences.getInstance();
+
         final SharedPreferences prefs = await _prefs;
         prefs.setBool("regstatus", true);
         prefs.setString("email", email);
         prefs.setString("name", name);
         prefs.setString("password", password);
+        prefs.setString("fcmtoken", fcm_token);
+        await NotificationService.instance.subscribeToTopic("feed");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => BottomBar()),
@@ -81,11 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        // appBar: AppBar(title: const Text('Google SignIn Screen')),
-        body: Padding(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      // appBar: AppBar(title: const Text('Google SignIn Screen')),
+      body: SafeArea(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 35),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,10 +137,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       onTap: () async {
                         userCredential.value = await signInWithGoogle();
                         if (userCredential.value != null) {
+                          await _firebaseMessaging.requestPermission();
+                          final fmc_token = await _firebaseMessaging.getToken();
                           String name = userCredential.value.user!.displayName;
                           String email = userCredential.value.user!.email;
                           String password = userCredential.value.user!.uid;
-                          await login(name, email, password);
+                          print(fmc_token);
+                          await login(name, email, password,fmc_token!);
                         } else {
                           print("Bera google xatolik haqida xabar chiqar");
                         }

@@ -10,12 +10,12 @@ class PostLogin {
   Future<String> postLogin(
       String name,
       String email,
-      String password) async {
+      String password,String fcm_token) async {
     var url = Uri.parse( AppConstans.BASE_URL+"/register");
 
     try {
       Map data = { "name": name,
-        "email": email, "password": password};
+        "email": email, "password": password,"fcm_token":fcm_token};
       //malumotlani jsonga moslashtirish
       var body = json.encode(data);
       var response = await http.post(url,

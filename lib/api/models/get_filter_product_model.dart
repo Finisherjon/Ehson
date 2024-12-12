@@ -109,15 +109,15 @@ class Data {
   String? title;
   String? info;
   String? img1;
-  Null? img2;
-  Null? img3;
+  String? img2;
+  String? img3;
   int? categoryId;
   int? cityId;
   bool? status;
   String? createdAt;
   String? updatedAt;
   String? phone;
-  Null? avatar;
+  String? avatar;
   int? isliked;
 
   Data(

@@ -6,6 +6,7 @@ import 'package:ehson/bloc/homebloc/home_bloc.dart';
 import 'package:ehson/screen/add_product/screen/add_product_screen.dart';
 import 'package:ehson/screen/bottom_bar.dart';
 import 'package:ehson/screen/home/home_screen.dart';
+import 'package:ehson/screen/service/notification_service.dart';
 import 'package:ehson/screen/verification/log_In_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 bool isreg = false;
 final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -35,6 +37,7 @@ void main() async {
         messagingSenderId: "892715575526",
         projectId: "ehson-6d76d"),
   );
+  await NotificationService.instance.initialize();
   runApp(const MyApp());
 }
 
@@ -66,6 +69,7 @@ class MyApp extends StatelessWidget {
       ],
       // create: (context) => AddProductBloc(),
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Flutter Demo',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
