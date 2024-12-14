@@ -106,8 +106,8 @@ class NotificationService {
     if (message.data.isNotEmpty) {
       await _localNotifications.show(
         notification.hashCode,
-        message.data['title'],
-        message.data['message'],
+        notification!.title.toString(),
+        notification!.body.toString(),
         NotificationDetails(
           android: AndroidNotificationDetails(
             'high_importance_channel',
@@ -147,18 +147,17 @@ class NotificationService {
 
   void _handleBackgroundMessage(RemoteMessage message) {
     if (message.data['type'] == 'feed') {
-      showNotification(message);
 
-      // navigatorKey.currentState?.push(MaterialPageRoute(
-      //   builder: (context) {
-      //     return BlocProvider(
-      //       create: (ctx) => OneFeedBloc(),
-      //       child: OneFeedPage(
-      //         mavzu_id: message.data['id'],
-      //       ),
-      //     );
-      //   },
-      // ));
+      navigatorKey.currentState?.push(MaterialPageRoute(
+        builder: (context) {
+          return BlocProvider(
+            create: (ctx) => OneFeedBloc(),
+            child: OneFeedPage(
+              mavzu_id: int.parse(message.data['id']),
+            ),
+          );
+        },
+      ));
 
       // navigatorKey.currentState?..push(context,
       //     MaterialPageRoute(
