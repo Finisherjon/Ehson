@@ -208,7 +208,7 @@ class _AddYordamState extends State<AddYordam> {
                       Padding(
                         padding: const EdgeInsets.only(left: 10),
                         child: Text(
-                          "Title",
+                          "Sarlavha",
                           style: GoogleFonts.roboto(
                               textStyle: TextStyle(fontSize: 20)),
                         ),
@@ -247,7 +247,7 @@ class _AddYordamState extends State<AddYordam> {
                       Padding(
                         padding: const EdgeInsets.only(left: 10),
                         child: Text(
-                          "Info",
+                          "Ma'lumot",
                           style: GoogleFonts.roboto(
                               textStyle: TextStyle(fontSize: 20)),
                         ),
@@ -291,7 +291,7 @@ class _AddYordamState extends State<AddYordam> {
                       Padding(
                         padding: const EdgeInsets.only(left: 10),
                         child: Text(
-                          "Phone number",
+                          "Telefon raqam",
                           style: GoogleFonts.roboto(
                               textStyle: TextStyle(fontSize: 20)),
                         ),
@@ -332,7 +332,7 @@ class _AddYordamState extends State<AddYordam> {
                       Padding(
                         padding: const EdgeInsets.only(left: 10),
                         child: Text(
-                          "Location",
+                          "Joylashuv",
                           style: GoogleFonts.roboto(
                               textStyle: TextStyle(fontSize: 20)),
                         ),

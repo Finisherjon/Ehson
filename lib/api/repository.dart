@@ -32,7 +32,7 @@ class EhsonRepository {
     try {
       var response = await http.get(url, headers: {
         "Content-Type": "application/json",
-      });
+      }).timeout(Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final response_json = json.decode(utf8.decode(response.bodyBytes));
@@ -62,7 +62,7 @@ class EhsonRepository {
           "Content-Type": "application/json",
           "Authorization": 'Bearer $token',
         },
-      );
+      ).timeout(Duration(seconds: 5));;
       if (response.statusCode == 200) {
         final Map response_json = json.decode(utf8.decode(response.bodyBytes));
         if (response_json['status']) {
@@ -97,7 +97,7 @@ class EhsonRepository {
       var response = await http.get(url, headers: {
         "Content-Type": "application/json",
         "Authorization": 'Bearer $token',
-      });
+      }).timeout(Duration(seconds: 5));;
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       print(resdata);
       if (response.statusCode == 200) {
@@ -139,7 +139,7 @@ class EhsonRepository {
       var response = await http.get(url, headers: {
         "Content-Type": "application/json",
         "Authorization": 'Bearer $token',
-      });
+      }).timeout(Duration(seconds: 5));;
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       print(resdata);
       if (response.statusCode == 200) {
@@ -186,7 +186,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));;
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
         if (resdata['status']) {
@@ -232,7 +232,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));;
 
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
@@ -279,7 +279,7 @@ class EhsonRepository {
       var response = await http.get(url, headers: {
         "Content-Type": "application/json",
         "Authorization": 'Bearer $token',
-      });
+      }).timeout(Duration(seconds: 5));
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
         if (resdata['status']) {
@@ -335,7 +335,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata["status"] == true) {
@@ -391,7 +391,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata["status"] == true) {
@@ -441,7 +441,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));;
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
@@ -490,7 +490,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));;
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
@@ -539,7 +539,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
@@ -589,7 +589,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
@@ -638,7 +638,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata["status"] == true) {
@@ -689,7 +689,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata["status"] == true) {
@@ -741,7 +741,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       if (response.statusCode == 200) {
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         if (resdata["status"] == true) {
@@ -790,7 +790,7 @@ class EhsonRepository {
       var body = json.encode(data);
       try {
         var response = await http.post(url,
-            headers: {"Content-Type": "application/json"}, body: body);
+            headers: {"Content-Type": "application/json"}, body: body).timeout(Duration(seconds: 5));
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
         if (response.statusCode == 200) {
@@ -843,7 +843,7 @@ class EhsonRepository {
         };
         var body = json.encode(data);
         var response = await http.post(url,
-              headers: {"Content-Type": "application/json","Authorization": 'Bearer $token'}, body: body);
+              headers: {"Content-Type": "application/json","Authorization": 'Bearer $token'}, body: body).timeout(Duration(seconds: 5));
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
         if (response.statusCode == 200) {
@@ -902,7 +902,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
 
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
@@ -948,7 +948,7 @@ class EhsonRepository {
       var body = json.encode(data);
       try {
         var response = await http.post(url,
-            headers: {"Content-Type": "application/json"}, body: body);
+            headers: {"Content-Type": "application/json"}, body: body).timeout(Duration(seconds: 5));
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
         if (response.statusCode == 200) {
@@ -1000,7 +1000,7 @@ class EhsonRepository {
         var response = await http.get(url, headers: {
           "Content-Type": "application/json",
           "Authorization": 'Bearer $token',
-        });
+        }).timeout(Duration(seconds: 5));
         final resdata = json.decode(utf8.decode(response.bodyBytes));
         print(resdata);
         if (response.statusCode == 200) {
@@ -1051,7 +1051,7 @@ class EhsonRepository {
       var response = await http.get(url, headers: {
         "Content-Type": "application/json",
         "Authorization": 'Bearer $token',
-      });
+      }).timeout(Duration(seconds: 5));
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
         if (resdata['status']) {
@@ -1097,7 +1097,7 @@ class EhsonRepository {
       var response = await http.get(url, headers: {
         "Content-Type": "application/json",
         "Authorization": 'Bearer $token',
-      });
+      }).timeout(Duration(seconds: 5));
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
         if (resdata['status']) {
@@ -1159,7 +1159,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
       final resdata = json.decode(utf8.decode(response.bodyBytes));
 
       if (response.statusCode == 200) {
@@ -1221,7 +1221,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
 
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
@@ -1278,7 +1278,7 @@ class EhsonRepository {
           "Authorization": 'Bearer $token',
         },
         body: body,
-      );
+      ).timeout(Duration(seconds: 5));
 
       final resdata = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {

@@ -4,11 +4,16 @@ import 'dart:io';
 import 'package:ehson/api/models/user_model.dart';
 import 'package:ehson/api/repository.dart';
 import 'package:ehson/screen/home/home_screen.dart';
+import 'package:ehson/screen/verification/log_In_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import 'package:material_dialogs/material_dialogs.dart';
+import 'package:material_dialogs/shared/types.dart';
+import 'package:material_dialogs/widgets/buttons/icon_button.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -110,6 +115,28 @@ class _ProfileState extends State<Profile> {
 
   final ImagePicker _picker = ImagePicker();
   File? _images;
+
+  Future<bool> signOutFromGoogle() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+      final SharedPreferences prefs = await _prefs;
+      prefs.setBool("regstatus", false);
+      prefs.setString("email", "");
+      prefs.setString("name", "");
+      prefs.setString("password", "");
+      prefs.setString("fcmtoken", "");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        //bulimi polvon ha davom et xay
+      );
+      return true;
+    } on Exception catch (_) {
+      return false;
+    }
+  }
 
   Future<String> _uploadImage(XFile image) async {
     var token = '';
@@ -215,7 +242,7 @@ class _ProfileState extends State<Profile> {
     //bitta smartrefresher qoyamiz
     return Scaffold(
       appBar: AppBar(
-        title: Text("Profile"),
+        title: Text("Ma'lumotlarim"),
         centerTitle: true,
       ),
       body: LoaderOverlay(
@@ -323,7 +350,7 @@ class _ProfileState extends State<Profile> {
                                 ),
                               ),
                               Text(
-                                  userModel!.user!.phone != null ? "Phone: " + userModel!.user!.phone.toString() : "Phone: - ",
+                                  userModel!.user!.phone != null ? "Telefon raqam: " + userModel!.user!.phone.toString() : "Telefon raqam: - ",
                                 style: GoogleFonts.roboto(
                                   textStyle: TextStyle(
                                       fontSize: 20,
@@ -537,6 +564,68 @@ class _ProfileState extends State<Profile> {
                                       onPressed: _validateFields,
                                       child: Text(
                                         "Saqlash",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10,),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.85,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.06,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      onPressed: ()async{
+
+                                        Dialogs.materialDialog(
+                                            color: Colors.white,
+                                            msg: "Akkauntdan chiqishni xoxlaysizmi?",
+                                            titleStyle: TextStyle(fontSize: 18),
+                                            titleAlign: TextAlign.center,
+                                            title: "Mehr",
+                                            customViewPosition: CustomViewPosition.BEFORE_ACTION,
+                                            context: context,
+                                            actions: [
+                                              TextButton(onPressed: (){
+                                                Navigator.pop(context);
+                                              }, child: Text("Yo'q")),
+                                              IconsButton(
+                                                onPressed: () async{
+                                                  context.loaderOverlay.show();
+
+                                                  bool absd = await signOutFromGoogle();
+                                                  if(!absd){
+                                                    Fluttertoast.showToast(
+                                                        msg: "Akkauntdan chiqishda xatolik! Qayta urunib ko'ring!",
+                                                        toastLength: Toast.LENGTH_SHORT,
+                                                        gravity: ToastGravity.BOTTOM,
+                                                        timeInSecForIosWeb: 1,
+                                                        backgroundColor: Colors.red,
+                                                        textColor: Colors.white,
+                                                        fontSize: 16.0);
+                                                  }
+
+                                                  context.loaderOverlay.hide();
+                                                },
+                                                text: 'Ha',
+                                                // iconData: Icons.done,
+                                                color: Colors.blue,
+                                                textStyle: TextStyle(color: Colors.white),
+                                                iconColor: Colors.white,
+                                              ),
+                                            ]);
+
+                                      },
+                                      child: Text(
+                                        "Chiqish",
                                         style: TextStyle(color: Colors.white),
                                       ),
                                     ),

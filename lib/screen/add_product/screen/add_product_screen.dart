@@ -74,7 +74,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             backgroundColor: Colors.blue,
             textColor: Colors.white,
             fontSize: 16.0);
-        Navigator.pop(context);
+        Navigator.pop(context,true);
       } else {
         context.loaderOverlay.hide();
 

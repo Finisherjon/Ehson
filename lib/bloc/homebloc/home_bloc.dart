@@ -16,24 +16,35 @@ class HomeBloc extends Bloc<ProductEvent, ProductState> {
     // });
     on<ProductEvent>((event, emit) async {
       if (event is ReloadProductEvent) {
-        emit(state.copyWith(
-            nextPageUrl: "",
-            status: Product.loading,
-            islast: false,
-            products: []));
-        final product_response =
-            await EhsonRepository().getproduct(state.nextPageUrl, event.date);
+        try{
+          emit(state.copyWith(
+              nextPageUrl: "",
+              status: Product.loading,
+              islast: false,
+              products: []));
+          final product_response =
+          await EhsonRepository().getproduct(state.nextPageUrl, event.date);
 
-        return product_response!.products!.data!.isEmpty
-            ? emit(state.copyWith(status: Product.success, islast: true))
-            : emit(state.copyWith(
-                nextPageUrl: product_response.products!.nextPageUrl,
-                status: Product.success,
-                products: List.of(state.products)
-                  ..addAll(product_response.products!.data!),
-                islast: product_response.products!.nextPageUrl == null
-                    ? true
-                    : false));
+          return product_response!.products!.data!.isEmpty
+              ? emit(state.copyWith(status: Product.success, islast: true))
+              : emit(state.copyWith(
+              nextPageUrl: product_response.products!.nextPageUrl,
+              status: Product.success,
+              products: List.of(state.products)
+                ..addAll(product_response.products!.data!),
+              islast: product_response.products!.nextPageUrl == null
+                  ? true
+                  : false));
+        }
+        catch (e) {
+          if (state.status == Product.loading) {
+            return emit(state.copyWith(
+                status: Product.error, errorMessage: "failed to fetch posts"));
+          } else {
+            return emit(state.copyWith(
+                status: Product.error, errorMessage: "failed to fetch posts"));
+          }
+        }
       }
 
       if (event is GetProductEvent) {
@@ -72,7 +83,8 @@ class HomeBloc extends Bloc<ProductEvent, ProductState> {
             return emit(state.copyWith(
                 status: Product.error, errorMessage: "failed to fetch posts"));
           } else {
-            return;
+            return emit(state.copyWith(
+                status: Product.error, errorMessage: "failed to fetch posts"));
           }
         }
       }

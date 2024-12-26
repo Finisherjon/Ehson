@@ -231,179 +231,181 @@ class _HomeScreenState extends State<HomeScreen> {
       //bottombardayn yoq u avvalam shunay bulib utirodi kuproq rasm quwib billim
       child: LoaderOverlay(
         child: Scaffold(
-          body: SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: Sizes.heights(context) * 0.005,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      //nima qimoqchisan pasroqa tushurdim bul
-                      IconButton(
-                        icon: Icon(
-                          Icons.person,
-                          size: IconSize.largeIconSize(context),
-                          color: Colors.blueAccent,
+          body: SmartRefresher(
+            onRefresh: _onrefresh,
+            controller: _refreshController,
+            child: SingleChildScrollView(
+              physics: NeverScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: Sizes.heights(context) * 0.005,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        //nima qimoqchisan pasroqa tushurdim bul
+                        IconButton(
+                          icon: Icon(
+                            Icons.person,
+                            size: IconSize.largeIconSize(context),
+                            color: Colors.blueAccent,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => Profile()));
+                          },
                         ),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => Profile()));
-                        },
-                      ),
-                      Expanded(
-                        // decoration: BoxDecoration(
-                        //   borderRadius: BorderRadius.circular(15),
-                        // ),
+                        Expanded(
+                          // decoration: BoxDecoration(
+                          //   borderRadius: BorderRadius.circular(15),
+                          // ),
 
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(30),
-                          onTap: () {
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(30),
+                            onTap: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return BlocProvider(
+                                  create: (ctx) => SearchProductBloc(),
+                                  child: SearchPage(),
+                                );
+                              }));
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 12.0),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.search, color: Colors.grey),
+                                  SizedBox(width: 8.0),
+                                  Text('Nima qidiryapsiz',
+                                      style: TextStyle(color: Colors.grey)),
+                                ],
+                              ),
+                            ),
+                            // Container(
+                            //   height: Sizes.heights(context) * 0.066,
+                            //   child: TextFormField(
+                            //     autofocus: false,
+                            //     decoration: InputDecoration(
+                            //       hintText: 'Nimani qidiryapsiz?',
+                            //       hintStyle: TextStyle(color: Colors.grey),
+                            //       border: OutlineInputBorder(
+                            //         borderRadius:
+                            //             BorderRadius.all(Radius.circular(20.0)),
+                            //         borderSide: BorderSide(color: Colors.white),
+                            //       ),
+                            //       prefixIcon: Icon(
+                            //         Icons.search,
+                            //         color: Colors.grey,
+                            //         size: IconSize.smallIconSize(context),
+                            //       ),
+                            //     ),
+                            //     style: TextStyle(color: Colors.grey),
+                            //     onChanged: (query) {},
+                            //   ),
+                            // ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.filter_alt,
+                            size: IconSize.largeIconSize(context),
+                            color: Colors.blueAccent,
+                          ),
+                          onPressed: () {
+                            // Navigator.of(context).push(
+                            //   MaterialPageRoute(
+                            //     builder: (context) => FilterScreen(),
+                            //   ),
+                            // );
+
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                                  return BlocProvider(
+                                    create: (ctx) => GetFilterProductBloc(),
+                                    child: FilterScreen(),
+                                  );
+                                }));
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: Sizes.heights(context) * 0.005,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(
+                        width: Sizes.widths(context) * 0.4,
+                        height: Sizes.heights(context) * 0.07,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent),
+                          onPressed: () {},
+                          child: Text(
+                            "Xayriya",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.4,
+                        height: MediaQuery.of(context).size.height * 0.07,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Navigator.of(context).push(
+                            //     MaterialPageRoute(builder: (context) => Yordam()));
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
                               return BlocProvider(
-                                create: (ctx) => SearchProductBloc(),
-                                child: SearchPage(),
+                                create: (ctx) => YordamBloc(),
+                                child: Yordam(),
                               );
                             }));
                           },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 12.0),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.search, color: Colors.grey),
-                                SizedBox(width: 8.0),
-                                Text('Nima qidiryapsiz',
-                                    style: TextStyle(color: Colors.grey)),
-                              ],
-                            ),
+                          child: Text(
+                            "Yordam",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
                           ),
-                          // Container(
-                          //   height: Sizes.heights(context) * 0.066,
-                          //   child: TextFormField(
-                          //     autofocus: false,
-                          //     decoration: InputDecoration(
-                          //       hintText: 'Nimani qidiryapsiz?',
-                          //       hintStyle: TextStyle(color: Colors.grey),
-                          //       border: OutlineInputBorder(
-                          //         borderRadius:
-                          //             BorderRadius.all(Radius.circular(20.0)),
-                          //         borderSide: BorderSide(color: Colors.white),
-                          //       ),
-                          //       prefixIcon: Icon(
-                          //         Icons.search,
-                          //         color: Colors.grey,
-                          //         size: IconSize.smallIconSize(context),
-                          //       ),
-                          //     ),
-                          //     style: TextStyle(color: Colors.grey),
-                          //     onChanged: (query) {},
-                          //   ),
-                          // ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.filter_alt,
-                          size: IconSize.largeIconSize(context),
-                          color: Colors.blueAccent,
-                        ),
-                        onPressed: () {
-                          // Navigator.of(context).push(
-                          //   MaterialPageRoute(
-                          //     builder: (context) => FilterScreen(),
-                          //   ),
-                          // );
-
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                                return BlocProvider(
-                                  create: (ctx) => GetFilterProductBloc(),
-                                  child: FilterScreen(),
-                                );
-                              }));
-                        },
                       ),
                     ],
                   ),
-                ),
-                SizedBox(
-                  height: Sizes.heights(context) * 0.005,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Container(
-                      width: Sizes.widths(context) * 0.4,
-                      height: Sizes.heights(context) * 0.07,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueAccent),
-                        onPressed: () {},
-                        child: Text(
-                          "Xayriya",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.4,
-                      height: MediaQuery.of(context).size.height * 0.07,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Navigator.of(context).push(
-                          //     MaterialPageRoute(builder: (context) => Yordam()));
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return BlocProvider(
-                              create: (ctx) => YordamBloc(),
-                              child: Yordam(),
+                  //mana shu home screen va home blockdan kuchir xuddi shunay buladi faqat model boshqa
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: BlocBuilder<HomeBloc, ProductState>(
+                      builder: (context, state) {
+                        switch (state.status) {
+                          case Product.loading:
+                            return Center(
+                              child: CircularProgressIndicator(),
                             );
-                          }));
-                        },
-                        child: Text(
-                          "Yordam",
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                //mana shu home screen va home blockdan kuchir xuddi shunay buladi faqat model boshqa
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: BlocBuilder<HomeBloc, ProductState>(
-                    builder: (context, state) {
-                      switch (state.status) {
-                        case Product.loading:
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        case Product.success:
-                          if (state.products.isEmpty) {
+                          case Product.success:
+                            if (state.products.isEmpty) {
+                              return Container(
+                                child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                                width: MediaQuery.of(context).size.width,
+                                height: MediaQuery.of(context).size.height * 0.86,
+                              );
+                            }
                             return Container(
-                              child: MyWidget().mywidget("Hech narsa topilmadi!"),
-                              width: MediaQuery.of(context).size.width,
-                              height: MediaQuery.of(context).size.height * 0.86,
-                            );
-                          }
-                          return Container(
-                            height: MediaQuery.of(context).size.height * 0.707,
-                            child: SmartRefresher(
+                              height: MediaQuery.of(context).size.height * 0.707,
                               child: MasonryGridView.count(
                                   controller: _scrollController,
                                   physics: BouncingScrollPhysics(),
@@ -867,245 +869,276 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           );
                                   }),
-                              controller: _refreshController,
-                              onRefresh: _onrefresh,
-                            ),
-                          );
-                        //   GridView.builder(
-                        //   gridDelegate:
-                        //       SliverGridDelegateWithFixedCrossAxisCount(
-                        //     crossAxisCount: 2,
-                        //     crossAxisSpacing: 15,
-                        //     mainAxisSpacing: 10,
-                        //     childAspectRatio: 0.65,
-                        //   ),
-                        //   // controller: _scrollController,
-                        //   itemCount: state.islast
-                        //       ? state.products.length
-                        //       : state.products.length + 2,
-                        //   scrollDirection: Axis.vertical,
-                        //   shrinkWrap: true,
-                        //   physics: NeverScrollableScrollPhysics(),
-                        //   itemBuilder: (context, index) {
-                        //     String? asosiy_img;
-                        //     if (state.products.length > index) {
-                        //       if (state.products[index].img1 != null) {
-                        //         asosiy_img = state.products[index].img1;
-                        //       } else if (state.products[index].img2 != null) {
-                        //         asosiy_img = state.products[index].img2;
-                        //       } else if (state.products[index].img3 != null) {
-                        //         asosiy_img = state.products[index].img3;
-                        //       } else {
-                        //         asosiy_img = null;
-                        //       }
-                        //     }
-                        //     return index >= state.products.length
-                        //         ? Center(
-                        //             child: CircularProgressIndicator(),
-                        //           )
-                        //         : InkWell(
-                        //             child: Container(
-                        //               // height: MediaQuery.of(context).size.height*0.05,
-                        //               padding: EdgeInsets.only(bottom: 10),
-                        //               decoration: BoxDecoration(
-                        //                 borderRadius: BorderRadius.circular(25),
-                        //                 color: Colors.white,
-                        //                 boxShadow: [
-                        //                   BoxShadow(
-                        //                     color:
-                        //                         Colors.black.withOpacity(0.1),
-                        //                     blurRadius: 5,
-                        //                     spreadRadius: 1,
-                        //                     offset: const Offset(1, 1),
-                        //                   ),
-                        //                 ],
-                        //               ),
-                        //               //dizayn qichiq buliptiku
-                        //               child: Container(
-                        //                 decoration: BoxDecoration(
-                        //                   borderRadius:
-                        //                       BorderRadius.circular(25),
-                        //                 ),
-                        //                 child: Flex(
-                        //                   crossAxisAlignment:
-                        //                       CrossAxisAlignment.start,
-                        //                   direction: Axis.vertical,
-                        //                   children: [
-                        //                     Expanded(
-                        //                       child: Stack(
-                        //                         //boli meni normalniy
-                        //                         children: [
-                        //                           Padding(
-                        //                             padding:
-                        //                                 const EdgeInsets.all(
-                        //                                     5.0),
-                        //                             child: Center(
-                        //                               child: asosiy_img ==
-                        //                                           null &&
-                        //                                       state.products
-                        //                                               .length >
-                        //                                           index
-                        //                                   ? Image.network(
-                        //                                       AppConstans
-                        //                                               .BASE_URL2 +
-                        //                                           "images/1722061202.jpg",
-                        //                                       fit: BoxFit
-                        //                                           .fitHeight,
-                        //                                     )
-                        //                                   : Image.network(
-                        //                                       AppConstans
-                        //                                               .BASE_URL2 +
-                        //                                           "images/" +
-                        //                                           asosiy_img!,
-                        //                                       fit: BoxFit
-                        //                                           .fitHeight,
-                        //                                     ),
-                        //                             ),
-                        //                           ),
-                        //                           Positioned(
-                        //                             right: 10,
-                        //                             top: 10,
-                        //                             child: Container(
-                        //                               height: 30,
-                        //                               width: 30,
-                        //                               decoration: BoxDecoration(
-                        //                                 color: Colors.white,
-                        //                                 shape: BoxShape.circle,
-                        //                               ),
-                        //                               alignment:
-                        //                                   Alignment.center,
-                        //                               child: IconButton(
-                        //                                 style: IconButton
-                        //                                     .styleFrom(
-                        //                                   minimumSize:
-                        //                                       Size.zero,
-                        //                                   padding:
-                        //                                       EdgeInsets.zero,
-                        //                                 ),
-                        //                                 onPressed: () async {
-                        //                                   setState(() {
-                        //                                     _heartIcon =
-                        //                                         !_heartIcon;
-                        //                                   });
-                        //                                 },
-                        //                                 icon: Icon(
-                        //                                   _heartIcon
-                        //                                       ? Icons.favorite
-                        //                                       : Icons
-                        //                                           .favorite_border,
-                        //                                   color: Colors.red,
-                        //                                   size: 20,
-                        //                                 ),
-                        //                               ),
-                        //                             ),
-                        //                           ),
-                        //                           Positioned(
-                        //                             right: 10,
-                        //                             bottom: 10,
-                        //                             child: Column(
-                        //                               children: [
-                        //                                 Container(
-                        //                                   height: 30,
-                        //                                   width: 30,
-                        //                                   decoration:
-                        //                                       BoxDecoration(
-                        //                                     color: Colors.white,
-                        //                                     shape:
-                        //                                         BoxShape.circle,
-                        //                                   ),
-                        //                                   alignment:
-                        //                                       Alignment.center,
-                        //                                   child: IconButton(
-                        //                                     style: IconButton
-                        //                                         .styleFrom(
-                        //                                       minimumSize:
-                        //                                           Size.zero,
-                        //                                       padding:
-                        //                                           EdgeInsets
-                        //                                               .zero,
-                        //                                     ),
-                        //                                     onPressed: () {},
-                        //                                     icon: Icon(
-                        //                                       Icons.chat,
-                        //                                       color:
-                        //                                           Colors.blue,
-                        //                                       size: 20,
-                        //                                     ),
-                        //                                   ),
-                        //                                 ),
-                        //                                 SizedBox(height: 8),
-                        //                                 // Orasidagi bo'sh joy
-                        //                                 Container(
-                        //                                   height: 30,
-                        //                                   width: 30,
-                        //                                   decoration:
-                        //                                       BoxDecoration(
-                        //                                     color: Colors.white,
-                        //                                     shape:
-                        //                                         BoxShape.circle,
-                        //                                   ),
-                        //                                   alignment:
-                        //                                       Alignment.center,
-                        //                                   child: IconButton(
-                        //                                     style: IconButton
-                        //                                         .styleFrom(
-                        //                                       minimumSize:
-                        //                                           Size.zero,
-                        //                                       padding:
-                        //                                           EdgeInsets
-                        //                                               .zero,
-                        //                                     ),
-                        //                                     onPressed: () {},
-                        //                                     icon: Icon(
-                        //                                       Icons.phone,
-                        //                                       color:
-                        //                                           Colors.green,
-                        //                                       size: 20,
-                        //                                     ),
-                        //                                   ),
-                        //                                 ),
-                        //                               ],
-                        //                             ),
-                        //                           ),
-                        //                         ],
-                        //                       ),
-                        //                     ),
-                        //                     Padding(
-                        //                       padding: EdgeInsets.only(
-                        //                           left: 8, right: 8, top: 8),
-                        //                       child: Text(
-                        //                         state.products[index].title
-                        //                             .toString(),
-                        //                         style: TextStyle(
-                        //                             fontWeight:
-                        //                                 FontWeight.bold),
-                        //                         maxLines: 1,
-                        //                         overflow: TextOverflow.ellipsis,
-                        //                       ),
-                        //                     ),
-                        //                     Padding(
-                        //                       padding: EdgeInsets.only(
-                        //                           left: 8, right: 8, top: 8),
-                        //                       child: Row(
-                        //                         children: [Text(' \$ free')],
-                        //                       ),
-                        //                     ),
-                        //                   ],
-                        //                 ),
-                        //               ),
-                        //             ),
-                        //           );
-                        //   },
-                        // );
-                        case Product.error:
-                          return Center(
-                            child: Text("Internet error"),
-                          );
-                      }
-                    },
+                            );
+                          //   GridView.builder(
+                          //   gridDelegate:
+                          //       SliverGridDelegateWithFixedCrossAxisCount(
+                          //     crossAxisCount: 2,
+                          //     crossAxisSpacing: 15,
+                          //     mainAxisSpacing: 10,
+                          //     childAspectRatio: 0.65,
+                          //   ),
+                          //   // controller: _scrollController,
+                          //   itemCount: state.islast
+                          //       ? state.products.length
+                          //       : state.products.length + 2,
+                          //   scrollDirection: Axis.vertical,
+                          //   shrinkWrap: true,
+                          //   physics: NeverScrollableScrollPhysics(),
+                          //   itemBuilder: (context, index) {
+                          //     String? asosiy_img;
+                          //     if (state.products.length > index) {
+                          //       if (state.products[index].img1 != null) {
+                          //         asosiy_img = state.products[index].img1;
+                          //       } else if (state.products[index].img2 != null) {
+                          //         asosiy_img = state.products[index].img2;
+                          //       } else if (state.products[index].img3 != null) {
+                          //         asosiy_img = state.products[index].img3;
+                          //       } else {
+                          //         asosiy_img = null;
+                          //       }
+                          //     }
+                          //     return index >= state.products.length
+                          //         ? Center(
+                          //             child: CircularProgressIndicator(),
+                          //           )
+                          //         : InkWell(
+                          //             child: Container(
+                          //               // height: MediaQuery.of(context).size.height*0.05,
+                          //               padding: EdgeInsets.only(bottom: 10),
+                          //               decoration: BoxDecoration(
+                          //                 borderRadius: BorderRadius.circular(25),
+                          //                 color: Colors.white,
+                          //                 boxShadow: [
+                          //                   BoxShadow(
+                          //                     color:
+                          //                         Colors.black.withOpacity(0.1),
+                          //                     blurRadius: 5,
+                          //                     spreadRadius: 1,
+                          //                     offset: const Offset(1, 1),
+                          //                   ),
+                          //                 ],
+                          //               ),
+                          //               //dizayn qichiq buliptiku
+                          //               child: Container(
+                          //                 decoration: BoxDecoration(
+                          //                   borderRadius:
+                          //                       BorderRadius.circular(25),
+                          //                 ),
+                          //                 child: Flex(
+                          //                   crossAxisAlignment:
+                          //                       CrossAxisAlignment.start,
+                          //                   direction: Axis.vertical,
+                          //                   children: [
+                          //                     Expanded(
+                          //                       child: Stack(
+                          //                         //boli meni normalniy
+                          //                         children: [
+                          //                           Padding(
+                          //                             padding:
+                          //                                 const EdgeInsets.all(
+                          //                                     5.0),
+                          //                             child: Center(
+                          //                               child: asosiy_img ==
+                          //                                           null &&
+                          //                                       state.products
+                          //                                               .length >
+                          //                                           index
+                          //                                   ? Image.network(
+                          //                                       AppConstans
+                          //                                               .BASE_URL2 +
+                          //                                           "images/1722061202.jpg",
+                          //                                       fit: BoxFit
+                          //                                           .fitHeight,
+                          //                                     )
+                          //                                   : Image.network(
+                          //                                       AppConstans
+                          //                                               .BASE_URL2 +
+                          //                                           "images/" +
+                          //                                           asosiy_img!,
+                          //                                       fit: BoxFit
+                          //                                           .fitHeight,
+                          //                                     ),
+                          //                             ),
+                          //                           ),
+                          //                           Positioned(
+                          //                             right: 10,
+                          //                             top: 10,
+                          //                             child: Container(
+                          //                               height: 30,
+                          //                               width: 30,
+                          //                               decoration: BoxDecoration(
+                          //                                 color: Colors.white,
+                          //                                 shape: BoxShape.circle,
+                          //                               ),
+                          //                               alignment:
+                          //                                   Alignment.center,
+                          //                               child: IconButton(
+                          //                                 style: IconButton
+                          //                                     .styleFrom(
+                          //                                   minimumSize:
+                          //                                       Size.zero,
+                          //                                   padding:
+                          //                                       EdgeInsets.zero,
+                          //                                 ),
+                          //                                 onPressed: () async {
+                          //                                   setState(() {
+                          //                                     _heartIcon =
+                          //                                         !_heartIcon;
+                          //                                   });
+                          //                                 },
+                          //                                 icon: Icon(
+                          //                                   _heartIcon
+                          //                                       ? Icons.favorite
+                          //                                       : Icons
+                          //                                           .favorite_border,
+                          //                                   color: Colors.red,
+                          //                                   size: 20,
+                          //                                 ),
+                          //                               ),
+                          //                             ),
+                          //                           ),
+                          //                           Positioned(
+                          //                             right: 10,
+                          //                             bottom: 10,
+                          //                             child: Column(
+                          //                               children: [
+                          //                                 Container(
+                          //                                   height: 30,
+                          //                                   width: 30,
+                          //                                   decoration:
+                          //                                       BoxDecoration(
+                          //                                     color: Colors.white,
+                          //                                     shape:
+                          //                                         BoxShape.circle,
+                          //                                   ),
+                          //                                   alignment:
+                          //                                       Alignment.center,
+                          //                                   child: IconButton(
+                          //                                     style: IconButton
+                          //                                         .styleFrom(
+                          //                                       minimumSize:
+                          //                                           Size.zero,
+                          //                                       padding:
+                          //                                           EdgeInsets
+                          //                                               .zero,
+                          //                                     ),
+                          //                                     onPressed: () {},
+                          //                                     icon: Icon(
+                          //                                       Icons.chat,
+                          //                                       color:
+                          //                                           Colors.blue,
+                          //                                       size: 20,
+                          //                                     ),
+                          //                                   ),
+                          //                                 ),
+                          //                                 SizedBox(height: 8),
+                          //                                 // Orasidagi bo'sh joy
+                          //                                 Container(
+                          //                                   height: 30,
+                          //                                   width: 30,
+                          //                                   decoration:
+                          //                                       BoxDecoration(
+                          //                                     color: Colors.white,
+                          //                                     shape:
+                          //                                         BoxShape.circle,
+                          //                                   ),
+                          //                                   alignment:
+                          //                                       Alignment.center,
+                          //                                   child: IconButton(
+                          //                                     style: IconButton
+                          //                                         .styleFrom(
+                          //                                       minimumSize:
+                          //                                           Size.zero,
+                          //                                       padding:
+                          //                                           EdgeInsets
+                          //                                               .zero,
+                          //                                     ),
+                          //                                     onPressed: () {},
+                          //                                     icon: Icon(
+                          //                                       Icons.phone,
+                          //                                       color:
+                          //                                           Colors.green,
+                          //                                       size: 20,
+                          //                                     ),
+                          //                                   ),
+                          //                                 ),
+                          //                               ],
+                          //                             ),
+                          //                           ),
+                          //                         ],
+                          //                       ),
+                          //                     ),
+                          //                     Padding(
+                          //                       padding: EdgeInsets.only(
+                          //                           left: 8, right: 8, top: 8),
+                          //                       child: Text(
+                          //                         state.products[index].title
+                          //                             .toString(),
+                          //                         style: TextStyle(
+                          //                             fontWeight:
+                          //                                 FontWeight.bold),
+                          //                         maxLines: 1,
+                          //                         overflow: TextOverflow.ellipsis,
+                          //                       ),
+                          //                     ),
+                          //                     Padding(
+                          //                       padding: EdgeInsets.only(
+                          //                           left: 8, right: 8, top: 8),
+                          //                       child: Row(
+                          //                         children: [Text(' \$ free')],
+                          //                       ),
+                          //                     ),
+                          //                   ],
+                          //                 ),
+                          //               ),
+                          //             ),
+                          //           );
+                          //   },
+                          // );
+                          case Product.error:
+                            return Container(
+
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: Text("Internet bilan bog'liq xatolik!",style: TextStyle(fontSize: 20),),
+                                  ),
+                                  SizedBox(height: 20,),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width *
+                                            0.65,
+                                        height: MediaQuery.of(context).size.height *
+                                            0.06,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blueAccent,
+                                          ),
+                                          onPressed: (){
+                                            _refreshController.requestRefresh();
+                                          },
+                                          child: Text(
+                                            "Qayta urunish",
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                mainAxisAlignment: MainAxisAlignment.center,
+                              ),
+                              height: MediaQuery.of(context).size.height*0.6,
+                            );
+                        }
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -1116,8 +1149,20 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(30),
             ),
             onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => AddProductScreen()));
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => AddProductScreen()))
+                  .then((result) {
+                if (result != null && result == true) {
+
+                  _refreshController.requestRefresh();
+                  // Orqaga qaytilganda xabar chiqariladi
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   SnackBar(
+                  //     content: Text("Mahsulot muvaffaqiyatli qo'shildi!"),
+                  //   ),
+                  // );
+                }
+              });
             },
             child: Icon(
               Icons.add,
