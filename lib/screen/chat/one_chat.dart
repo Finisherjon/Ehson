@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:ehson/bloc/message/message_list_bloc.dart';
 import 'package:ehson/constants/constants.dart';
 import 'package:ehson/mywidgets/mywidgets.dart';
+import 'package:ehson/screen/chat/profile_info.dart';
 import 'package:ehson/screen/service/socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -167,7 +168,13 @@ class _OneChatPageState extends State<OneChatPage> {
                     width: 45,
                     height: 45,
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ProfileInfo(profile_id: 1,avatar: widget.avatar,name: widget.name,),
+                        ));
+                      },
                       child:widget.avatar == null ? Icon(Icons.person,size: 30,) : Image.network(
                         AppConstans.BASE_URL2 + "images/" + widget.avatar!,
                         fit: BoxFit.cover,

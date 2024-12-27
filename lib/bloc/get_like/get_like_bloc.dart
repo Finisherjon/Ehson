@@ -11,24 +11,35 @@ class GetLikeBloc extends Bloc<LikeEvent, GetLikeState> {
   GetLikeBloc() : super(GetLikeState()) {
     on<LikeEvent>((event, emit) async{
       if (event is ReloadLikeEvent) {
-        emit(state.copyWith(
-            nextPageUrl: "",
-            status: GetLike.loading,
-            islast: false,
-            products: []));
-        final product_response =
-            await EhsonRepository().get_like(state.nextPageUrl);
+        try{
+          emit(state.copyWith(
+              nextPageUrl: "",
+              status: GetLike.loading,
+              islast: false,
+              products: []));
+          final product_response =
+          await EhsonRepository().get_like(state.nextPageUrl);
 
-        return product_response!.likedProducts!.data!.isEmpty
-            ? emit(state.copyWith(status: GetLike.success, islast: true))
-            : emit(state.copyWith(
-            nextPageUrl: product_response.likedProducts!.nextPageUrl,
-            status: GetLike.success,
-            products: List.of(state.products)
-              ..addAll(product_response.likedProducts!.data!),
-            islast: product_response.likedProducts!.nextPageUrl == null
-                ? true
-                : false));
+          return product_response!.likedProducts!.data!.isEmpty
+              ? emit(state.copyWith(status: GetLike.success, islast: true))
+              : emit(state.copyWith(
+              nextPageUrl: product_response.likedProducts!.nextPageUrl,
+              status: GetLike.success,
+              products: List.of(state.products)
+                ..addAll(product_response.likedProducts!.data!),
+              islast: product_response.likedProducts!.nextPageUrl == null
+                  ? true
+                  : false));
+        }
+        catch (e) {
+          if (state.status == GetLike.loading) {
+            return emit(state.copyWith(
+                status: GetLike.error, errorMessage: "failed to fetch posts"));
+          } else {
+            return emit(state.copyWith(
+                status: GetLike.error, errorMessage: "failed to fetch posts"));
+          }
+        }
       }
       if (event is GetLikeEvent) {
         if (state.islast) return;
@@ -66,7 +77,8 @@ class GetLikeBloc extends Bloc<LikeEvent, GetLikeState> {
             return emit(state.copyWith(
                 status: GetLike.error, errorMessage: "failed to fetch posts"));
           } else {
-            return;
+            return emit(state.copyWith(
+                status: GetLike.error, errorMessage: "failed to fetch posts"));
           }
         }
       }

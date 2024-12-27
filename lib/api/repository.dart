@@ -62,8 +62,9 @@ class EhsonRepository {
           "Content-Type": "application/json",
           "Authorization": 'Bearer $token',
         },
-      ).timeout(Duration(seconds: 5));;
+      );
       if (response.statusCode == 200) {
+        print(response.body);
         final Map response_json = json.decode(utf8.decode(response.bodyBytes));
         if (response_json['status']) {
           print("token yangilandi.");
@@ -962,6 +963,7 @@ class EhsonRepository {
           } else if (resdata['status'] == false &&
               resdata['message'].toString().contains("Token expired")) {
             bool token_isrefresh = await refresh_token(token);
+            print(token_isrefresh);
             if (token_isrefresh) {
               return await getproduct(next_page_url, date);
             } else {
@@ -1011,6 +1013,7 @@ class EhsonRepository {
           } else if (resdata['status'] == false &&
               resdata['message'].toString().contains("Token expired")) {
             bool token_isrefresh = await refresh_token(token);
+            print(token_isrefresh);
             if (token_isrefresh) {
               return await getproduct(next_page_url, date);
             } else {

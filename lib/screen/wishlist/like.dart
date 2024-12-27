@@ -539,8 +539,41 @@ class _LikePageState extends State<LikePage> {
                             ),
                           );
                         case GetLike.error:
-                          return Center(
-                            child: Text("Internet error"),
+                          return Container(
+
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: Text("Internet bilan bog'liq xatolik!",style: TextStyle(fontSize: 20),),
+                                ),
+                                SizedBox(height: 20,),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.65,
+                                      height: MediaQuery.of(context).size.height *
+                                          0.06,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blueAccent,
+                                        ),
+                                        onPressed: (){
+                                          _refreshController.requestRefresh();
+                                        },
+                                        child: Text(
+                                          "Qayta urunish",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                            height: MediaQuery.of(context).size.height*0.6,
                           );
                       }
                     },

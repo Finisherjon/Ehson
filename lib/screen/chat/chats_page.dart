@@ -101,16 +101,16 @@ class _ChatsPageState extends State<ChatsPage> {
           centerTitle: true,
           title: Text("Chat"),
         ),
-        body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: BlocBuilder<ChatListBloc, ChatListState>(
-            builder: (context, state) {
+        body: SmartRefresher(
+          controller: _refreshController,
+          onRefresh: _onrefresh,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: BlocBuilder<ChatListBloc, ChatListState>(
+              builder: (context, state) {
 
-              if (state is ChatListSuccess) {
-                return SmartRefresher(
-                  controller: _refreshController,
-                  onRefresh: _onrefresh,
-                  child: ListView.builder(
+                if (state is ChatListSuccess) {
+                  return ListView.builder(
                     // controller: _scrollController,
                     // physics: NeverScrollableScrollPhysics(),
                     itemCount: state.chatListModel.chats!.length,
@@ -129,6 +129,7 @@ class _ChatsPageState extends State<ChatsPage> {
                         name = state.chatListModel.chats![index].userOneName.toString();
                         avatar = state.chatListModel.chats![index].userOneAvatar;
                       }
+                      print(avatar);
                       return  Column(
                         children: [
                           ListTile(
@@ -147,12 +148,15 @@ class _ChatsPageState extends State<ChatsPage> {
                               //       builder: (context) => OneChatPage(chat_id: state.chatListModel!.chats![index].chatId,),
                               // ));
                             },
-                            leading: CircleAvatar(
+                            leading: avatar != null && !avatar.contains("null") ? CircleAvatar(
                               radius: 30,
-                              backgroundImage: avatar != null ? NetworkImage(
-                                AppConstans.BASE_URL2 + "images/" +state.chatListModel.chats![index].userOneAvatar.toString(),
-                              ) : null,
-                              child: avatar == null ? Icon(Icons.person,size: 30,) : SizedBox(),
+                              backgroundImage: NetworkImage(
+                                AppConstans.BASE_URL2 + "images/" +avatar,
+                              ) ,
+                              child: SizedBox(),
+                            ) : CircleAvatar(
+                              radius: 30,
+                              child: Icon(Icons.person),
                             ),
                             title: Text(name,style: TextStyle(fontWeight: FontWeight.bold),),
                             subtitle: state.chatListModel.chats![index].lastMessage == null ? Text("Yangi chat") : Text(state.chatListModel.chats![index].lastMessage.toString()),
@@ -192,14 +196,49 @@ class _ChatsPageState extends State<ChatsPage> {
                         ],
                       );
                     },
-                  ),
-                );
-              }
-              if (state is ChatListError) {
-                Center(child: Text("Server connection error"));
-              }
-              return Center(child: CircularProgressIndicator());
-            },
+                  );
+                }
+                if (state is ChatListError) {
+                  return Container(
+
+                    child: Column(
+                      children: [
+                        Center(
+                          child: Text("Internet bilan bog'liq xatolik!",style: TextStyle(fontSize: 20),),
+                        ),
+                        SizedBox(height: 20,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width *
+                                  0.65,
+                              height: MediaQuery.of(context).size.height *
+                                  0.06,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blueAccent,
+                                ),
+                                onPressed: (){
+                                  _refreshController.requestRefresh();
+                                },
+                                child: Text(
+                                  "Qayta urunish",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    height: MediaQuery.of(context).size.height*0.6,
+                  );
+                }
+                return Center(child: CircularProgressIndicator());
+              },
+            ),
           ),
         ),
       ),

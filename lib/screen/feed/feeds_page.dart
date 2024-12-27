@@ -121,78 +121,78 @@ class _FeedsPageState extends State<FeedsPage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-            backgroundColor: Colors.blueAccent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Icon(
-              Icons.add,
-              size: 30,
-              color: Colors.white,
-            ),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddMavzu(),
-                ),
-              );
-            }),
-        appBar: AppBar(
-          // elevation: 2.0,
-          // actions: [
-          //   Container(
-          //     margin: EdgeInsets.only(right: 10),
-          //     child: Row(
-          //       children: [
-          //         IconButton(
-          //           onPressed: () {},
-          //           icon: Icon(
-          //             color: Colors.blueAccent,
-          //             Icons.filter_alt_rounded,
-          //             size: 25,
-          //           ),
-          //         ),
-          //         IconButton(
-          //           onPressed: () {},
-          //           icon: Icon(
-          //             color: Colors.blueAccent,
-          //
-          //             Icons.search,
-          //             size: 25,
-          //           ),
-          //         )
-          //       ],
-          //     ),
-          //   ),
-          // ],
-          centerTitle: true,
-          title: Text("Mavzu"),
-        ),
-        body: LoaderOverlay(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: BlocBuilder<ChatBloc, ChatState>(
-              builder: (context, state) {
-                switch (state.status) {
-                  case ChatProduct.loading:
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  case ChatProduct.success:
-                    if (state.products.isEmpty) {
-                      return Container(
-                        child: MyWidget().mywidget("Hech narsa topilmadi!"),
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.86,
+      child: SmartRefresher(
+        controller: _refreshController,
+        onRefresh: _onrefresh,
+        child: Scaffold(
+          floatingActionButton: FloatingActionButton(
+              backgroundColor: Colors.blueAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Icon(
+                Icons.add,
+                size: 30,
+                color: Colors.white,
+              ),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddMavzu(),
+                  ),
+                );
+              }),
+          appBar: AppBar(
+            // elevation: 2.0,
+            // actions: [
+            //   Container(
+            //     margin: EdgeInsets.only(right: 10),
+            //     child: Row(
+            //       children: [
+            //         IconButton(
+            //           onPressed: () {},
+            //           icon: Icon(
+            //             color: Colors.blueAccent,
+            //             Icons.filter_alt_rounded,
+            //             size: 25,
+            //           ),
+            //         ),
+            //         IconButton(
+            //           onPressed: () {},
+            //           icon: Icon(
+            //             color: Colors.blueAccent,
+            //
+            //             Icons.search,
+            //             size: 25,
+            //           ),
+            //         )
+            //       ],
+            //     ),
+            //   ),
+            // ],
+            centerTitle: true,
+            title: Text("Mavzu"),
+          ),
+          body: LoaderOverlay(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: BlocBuilder<ChatBloc, ChatState>(
+                builder: (context, state) {
+                  switch (state.status) {
+                    case ChatProduct.loading:
+                      return Center(
+                        child: CircularProgressIndicator(),
                       );
-                    }
-                    return SmartRefresher(
-                      controller: _refreshController,
-                      onRefresh: _onrefresh,
-                      child: ListView.builder(
+                    case ChatProduct.success:
+                      if (state.products.isEmpty) {
+                        return Container(
+                          child: MyWidget().mywidget("Hech narsa topilmadi!"),
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.86,
+                        );
+                      }
+                      return ListView.builder(
                         controller: _scrollController,
                         // physics: NeverScrollableScrollPhysics(),
                         itemCount: state.islast
@@ -316,14 +316,47 @@ class _FeedsPageState extends State<FeedsPage> {
                                 ],
                               );
                         },
-                      ),
-                    );
-                  case ChatProduct.error:
-                    return Center(
-                      child: Text("Internet error"),
-                    );
-                }
-              },
+                      );
+                    case ChatProduct.error:
+                      return Container(
+
+                        child: Column(
+                          children: [
+                            Center(
+                              child: Text("Internet bilan bog'liq xatolik!",style: TextStyle(fontSize: 20),),
+                            ),
+                            SizedBox(height: 20,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width *
+                                      0.65,
+                                  height: MediaQuery.of(context).size.height *
+                                      0.06,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blueAccent,
+                                    ),
+                                    onPressed: (){
+                                      _refreshController.requestRefresh();
+                                    },
+                                    child: Text(
+                                      "Qayta urunish",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          mainAxisAlignment: MainAxisAlignment.center,
+                        ),
+                        height: MediaQuery.of(context).size.height*0.6,
+                      );
+                  }
+                },
+              ),
             ),
           ),
         ),
