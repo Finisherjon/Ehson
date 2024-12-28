@@ -109,8 +109,10 @@ class _FeedsPageState extends State<FeedsPage> {
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
     final SharedPreferences prefs = await _prefs;
-    user_id = prefs.getInt("user_id") ?? 0;
-    admin = prefs.getBool("admin") ?? false;
+    setState(() {
+      user_id = prefs.getInt("user_id") ?? 0;
+      admin = prefs.getBool("admin") ?? false;
+    });
   }
 
   Future<void> _onrefresh() async {

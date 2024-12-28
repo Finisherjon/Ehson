@@ -55,32 +55,57 @@ class _HelpInfoState extends State<HelpInfo> {
   }
 
   Future<void> create_chat(int user_one,int user_two)async{
-    context.loaderOverlay.show();
-    CreateChatModel? createChatModel = await EhsonRepository().create_my_chat(user_one,user_two);
-    if(createChatModel!=null){
-      String name = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoName.toString() : createChatModel.chat!.userOneName.toString();
-      String avatar = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoAvatar.toString() : createChatModel.chat!.userOneAvatar.toString();
-      int? another_id = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoId : createChatModel.chat!.userOneId;
-      Navigator.push(context,
-          MaterialPageRoute(
-              builder: (context) {
-                return BlocProvider(
-                  create: (ctx) => MessageListBloc(),
-                  child:  OneChatPage(chat_id: createChatModel.chat!.chatId,name: name.toString(),avatar: avatar,my_id: user_id,another_id: another_id ?? 0,),
-                );
-              }));
-    } else {
+    if(user_one == user_id && user_two == user_id){
       Fluttertoast.showToast(
-          msg: "Serverda xatolik qayta urunib ko'ring!",
+          msg: "O'zingiz bilan chat qura olmaysiz!",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
           backgroundColor: Colors.red,
           textColor: Colors.white,
           fontSize: 16.0);
-
     }
-    context.loaderOverlay.hide();
+    else{
+      context.loaderOverlay.show();
+      try{
+        CreateChatModel? createChatModel = await EhsonRepository().create_my_chat(user_one,user_two);
+        if(createChatModel!=null){
+          String name = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoName.toString() : createChatModel.chat!.userOneName.toString();
+          String avatar = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoAvatar.toString() : createChatModel.chat!.userOneAvatar.toString();
+          int? another_id = createChatModel.chat!.userOneId == user_id ? createChatModel.chat!.userTwoId : createChatModel.chat!.userOneId;
+          Navigator.push(context,
+              MaterialPageRoute(
+                  builder: (context) {
+                    return BlocProvider(
+                      create: (ctx) => MessageListBloc(),
+                      child:  OneChatPage(chat_id: createChatModel.chat!.chatId,name: name.toString(),avatar: avatar,my_id: user_id,another_id: another_id ?? 0,),
+                    );
+                  }));
+        } else {
+          Fluttertoast.showToast(
+              msg: "Serverda xatolik qayta urunib ko'ring!",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0);
+
+        }
+        context.loaderOverlay.hide();
+      }
+      catch (e) {
+        context.loaderOverlay.hide();
+        Fluttertoast.showToast(
+            msg: "Serverda xatolik qayta urunib ko'ring!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
+    }
 
   }
 
@@ -91,8 +116,10 @@ class _HelpInfoState extends State<HelpInfo> {
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
     //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
     final SharedPreferences prefs = await _prefs;
-    user_id = prefs.getInt("user_id") ?? 0;
-    admin = prefs.getBool("admin") ?? false;
+    setState(() {
+      user_id = prefs.getInt("user_id") ?? 0;
+      admin = prefs.getBool("admin") ?? false;
+    });
   }
 
   final PageController _pageController = PageController();

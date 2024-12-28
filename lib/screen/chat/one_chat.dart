@@ -32,6 +32,7 @@ class _OneChatPageState extends State<OneChatPage> {
   final _scrollController = ScrollController();
   Timer? _debounce;
   void _sendMessage() {
+
     if (_controller.text.isNotEmpty) {
       socketService.sendMessage(widget.chat_id.toString(), widget.my_id.toString(), widget.another_id.toString(), _controller.text.toString());
       DateTime now = new DateTime.now();
@@ -99,7 +100,8 @@ class _OneChatPageState extends State<OneChatPage> {
   }
 
   Future<void> _closeSocket() async {
-    socketService.socket.close();
+    socketService.socket.off('receiveMessage');
+    socketService.socket.disconnect();
   }
 
   @override
@@ -172,7 +174,7 @@ class _OneChatPageState extends State<OneChatPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ProfileInfo(profile_id: 1,avatar: widget.avatar,name: widget.name,),
+                              builder: (context) => ProfileInfo(profile_id: widget.another_id,avatar: widget.avatar,name: widget.name,),
                         ));
                       },
                       child:widget.avatar == null ? Icon(Icons.person,size: 30,) : Image.network(
@@ -231,7 +233,7 @@ class _OneChatPageState extends State<OneChatPage> {
                                   ),
                                 ),
                                 onSubmitted: (value) {
-                                  _sendMessage();
+                                  // _sendMessage();
                                 },
                               ),
                             ),
@@ -247,8 +249,41 @@ class _OneChatPageState extends State<OneChatPage> {
                   ),
                 );
               case MessageList.error:
-                return Center(
-                  child: Text("Internet error"),
+                return Container(
+
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Text("Internet bilan bog'liq xatolik!",style: TextStyle(fontSize: 20),),
+                      ),
+                      SizedBox(height: 20,),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width *
+                                0.65,
+                            height: MediaQuery.of(context).size.height *
+                                0.06,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blueAccent,
+                              ),
+                              onPressed: (){
+                                BlocProvider.of<MessageListBloc>(context).add(ReloadMessageListEvent(chat_id: widget.chat_id!));
+                              },
+                              child: Text(
+                                "Qayta urunish",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  ),
+                  height: MediaQuery.of(context).size.height*0.6,
                 );
               case MessageList.loading:
                 return Center(

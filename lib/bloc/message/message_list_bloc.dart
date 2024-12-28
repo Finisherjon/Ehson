@@ -10,24 +10,35 @@ class MessageListBloc extends Bloc<MessageListEvent, MessageListState> {
   MessageListBloc() : super(MessageListState()) {
     on<MessageListEvent>((event, emit) async{
       if (event is ReloadMessageListEvent) {
-        emit(state.copyWith(
-            nextPageUrl: "",
-            status: MessageList.loading,
-            islast: false,
-            products: []));
-        final product_response =
-            await EhsonRepository().getmessages(event.chat_id,state.nextPageUrl);
+        try{
+          emit(state.copyWith(
+              nextPageUrl: "",
+              status: MessageList.loading,
+              islast: false,
+              products: []));
+          final product_response =
+          await EhsonRepository().getmessages(event.chat_id,state.nextPageUrl);
 
-        return product_response!.messages!.data!.isEmpty
-            ? emit(state.copyWith(status: MessageList.success, islast: true))
-            : emit(state.copyWith(
-            nextPageUrl: product_response.messages!.nextPageUrl,
-            status: MessageList.success,
-            products: List.of(state.messages)
-              ..addAll(product_response.messages!.data!),
-            islast: product_response.messages!.nextPageUrl == null
-                ? true
-                : false));
+          return product_response!.messages!.data!.isEmpty
+              ? emit(state.copyWith(status: MessageList.success, islast: true))
+              : emit(state.copyWith(
+              nextPageUrl: product_response.messages!.nextPageUrl,
+              status: MessageList.success,
+              products: List.of(state.messages)
+                ..addAll(product_response.messages!.data!),
+              islast: product_response.messages!.nextPageUrl == null
+                  ? true
+                  : false));
+        }
+        catch (e) {
+          if (state.status == MessageList.loading) {
+            return emit(state.copyWith(
+                status: MessageList.error, errorMessage: "failed to fetch posts"));
+          } else {
+            return emit(state.copyWith(
+                status: MessageList.error, errorMessage: "failed to fetch posts"));
+          }
+        }
       }
       if (event is GetMessageListEvent) {
         if (state.islast) return;

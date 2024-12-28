@@ -11,6 +11,7 @@ import 'package:ehson/api/models/one_feed_model.dart';
 import 'package:ehson/api/models/one_help_model.dart';
 import 'package:ehson/api/models/one_product_model.dart';
 import 'package:ehson/api/models/product_model.dart';
+import 'package:ehson/api/models/user_info_model.dart';
 import 'package:ehson/api/models/user_model.dart';
 import 'package:ehson/api/models/yordam_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,6 +75,10 @@ class EhsonRepository {
           prefs.setString('bearer_token', response_json['token']);
           return true;
         } else {
+          if(response_json['message'].toString().contains("Need Login")){
+            bool a = await login();
+            return a;
+          }
           return false;
         }
       } else {
@@ -664,6 +669,62 @@ class EhsonRepository {
     }
   }
 
+  Future<UserInfoModel?> user_info(int user_id) async {
+    var token = '';
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    token = prefs.getString('bearer_token') ?? '';
+    UserInfoModel? userInfoModel;
+
+    var uri = Uri.parse(AppConstans.BASE_URL + '/userinfo');
+    Map data;
+    {
+      data = {
+        "user_id": user_id
+      };
+    }
+
+    var body = json.encode(data);
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer $token',
+        },
+        body: body,
+      ).timeout(Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final resdata = json.decode(utf8.decode(response.bodyBytes));
+        if (resdata["status"] == true) {
+          userInfoModel = UserInfoModel.fromJson(resdata);
+          return userInfoModel;
+        } else if (resdata['status'] == false &&
+            resdata['message'].toString().contains("Token expired")) {
+          bool token_isrefresh = await refresh_token(token);
+          if (token_isrefresh) {
+            return await user_info(user_id);
+          } else {
+            print("Server error code ${response.statusCode}");
+            throw Exception("Server error code ${response.statusCode}");
+          }
+        } else {
+          print(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        throw Exception("Server error ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error: $e");
+      throw Exception("Server error $e");
+    }
+  }
+
+
   Future<CreateChatModel?> create_my_chat(int user_one, int user_two) async {
     var token = '';
     final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -769,6 +830,42 @@ class EhsonRepository {
       }
     } catch (e) {
       print("Error: $e");
+      throw Exception("Server error $e");
+    }
+  }
+
+  Future<bool> login()async{
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    Map data = {
+      'email': prefs.getString('email'),
+      'password': prefs.getString('password')
+    };
+    var url = Uri.parse(AppConstans.BASE_URL + '/login');
+    var body = json.encode(data);
+    try {
+      var response = await http.post(url,
+          headers: {"Content-Type": "application/json"}, body: body).timeout(Duration(seconds: 5));
+      final resdata = json.decode(utf8.decode(response.bodyBytes));
+      print(resdata);
+      if (response.statusCode == 200) {
+        if (resdata['status']) {
+          final SharedPreferences prefs = await _prefs;
+          prefs.setString('bearer_token', resdata['token']);
+          return true;
+        }
+        else {
+          print(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+          throw Exception(
+              "getData->Server error code ${response.statusCode} ${resdata['message'].toString()}");
+        }
+      } else {
+        print("Server error code ${response.statusCode}");
+        throw Exception("Server error code ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Server error $e");
       throw Exception("Server error $e");
     }
   }
@@ -998,6 +1095,7 @@ class EhsonRepository {
       }
       final SharedPreferences prefs = await _prefs;
       var token = prefs.getString('bearer_token') ?? '';
+      print(token);
       try {
         var response = await http.get(url, headers: {
           "Content-Type": "application/json",

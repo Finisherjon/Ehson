@@ -26,20 +26,23 @@ class ChatsPage extends StatefulWidget {
   State<ChatsPage> createState() => _ChatsPageState();
 }
 
-Timer? _debounce;
-int user_id = 0;
-
-Future<void> getSharedPrefs() async {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
-  final SharedPreferences prefs = await _prefs;
-  user_id = prefs.getInt("user_id") ?? 0;
-  print(user_id);
-}
 
 class _ChatsPageState extends State<ChatsPage> {
   LatLng? _selectedLocation;
   // late ScrollController _scrollController;
+
+  Timer? _debounce;
+  int user_id = 0;
+
+  Future<void> getSharedPrefs() async {
+    final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    //tokenni login qigan paytimiz sharedga saqlab qoyganbiza
+    final SharedPreferences prefs = await _prefs;
+    setState(() {
+      user_id = prefs.getInt("user_id") ?? 0;
+    });
+    print(user_id);
+  }
   @override
   void initState() {
     super.initState();
